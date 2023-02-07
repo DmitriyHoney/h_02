@@ -29,9 +29,9 @@ export default function generateBaseRepo<I extends BaseDbEntity, P>(items: Array
             return true;
         },
         delete(id: number) {
-            const isExist = items.findIndex((i: I) => i.id === id);
-            if (!isExist) return false;
-            items = items.filter((i: I) => i.id === id);
+            const isExistIdx = items.findIndex((i: I) => i.id === id);
+            if (isExistIdx < 0) return false;
+            items.splice(isExistIdx, 1);
             return true;
         },
        _deleteAll() {

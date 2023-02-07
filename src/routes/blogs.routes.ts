@@ -9,6 +9,5 @@ router.get('/:id/', blogsController.getOne);
 router.post('/', ...validatorMiddleware, validatorsErrorsMiddleware, blogsController.create);
 router.put('/:id/', ...validatorMiddleware, validatorsErrorsMiddleware, blogsController.update);
 router.delete('/:id/', blogsController.deleteOne);
-// router.delete('/', blogsController.deleteAll);
 
 export default router;

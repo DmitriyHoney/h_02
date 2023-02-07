@@ -10,32 +10,41 @@ export default {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
             return;
         }
-        res.status(HTTP_STATUSES.CREATED_201).send(item);
+        res.status(HTTP_STATUSES.OK_200).send(item);
     },
     create: (req: Request, res: Response) => {
         const body = req.body;
         // TODO check validations
         // TODO check auth
         const item = productRepo.create(body);
-        res.status(HTTP_STATUSES.CREATED_201).json(item);
+        res.status(HTTP_STATUSES.CREATED_201).send(item);
     },
     update: (req: Request, res: Response) => {
         const body = req.body;
         // TODO check validations
         // TODO check auth
         const isUpdated = productRepo.update(+req.params.id, body);
-        if (!isUpdated) res.status(HTTP_STATUSES.NOT_FOUND_404);
-        res.status(HTTP_STATUSES.NO_CONTENT_204);
+        if (!isUpdated) {
+            res.status(HTTP_STATUSES.NOT_FOUND_404).send();
+            return;
+        };
+        res.status(HTTP_STATUSES.NO_CONTENT_204).send();
     },
     deleteOne: (req: Request, res: Response) => {
         const isDeleted = productRepo.delete(+req.params.id);
         // TODO check auth
-        if (!isDeleted) res.status(HTTP_STATUSES.NOT_FOUND_404);
-        res.status(HTTP_STATUSES.NO_CONTENT_204);
+        if (!isDeleted) {
+            res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+            return;
+        }
+        res.status(HTTP_STATUSES.NO_CONTENT_204).send();
     },
     deleteAll: (req: Request, res: Response) => {
         const isDeleted = productRepo._deleteAll();
-        if (!isDeleted) res.status(HTTP_STATUSES.NOT_FOUND_404);
-        res.status(HTTP_STATUSES.NO_CONTENT_204);
+        if (!isDeleted) {
+            res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+            return;
+        }
+        res.status(HTTP_STATUSES.NO_CONTENT_204).send();
     }
 };

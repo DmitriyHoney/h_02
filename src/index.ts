@@ -1,8 +1,9 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import productsRoute from './routes/blogs.routes';
+import testRoute from './routes/test.routes';
 
-const PORT = 3001;
+const PORT = 3004;
 export const app = express();
 
 export const HTTP_STATUSES = {
@@ -19,5 +20,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => res.send('Hello, world!'));
 app.use('/ht_02/api/blogs', productsRoute);
+app.use('/ht_02/api/testing/all-data', testRoute);
 
 app.listen(PORT, () => console.log(`http://localhost:${PORT}`))

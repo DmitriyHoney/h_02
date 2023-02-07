@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import productsRoute from './routes/blogs.routes';
 import testRoute from './routes/test.routes';
 
-const PORT = 3004;
+const PORT = 3001;
 export const app = express();
 
 export const HTTP_STATUSES = {

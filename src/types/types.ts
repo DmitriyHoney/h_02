@@ -6,4 +6,13 @@ export type Blog = {
     websiteUrl: string
 }
 
+export type Post = {
+    title: string,
+    shortDescription: string,
+    content: string,
+    blogId: string,
+    blogName: string,
+}
+
 export type BlogModel = BaseDbEntity & Blog;
+export type PostModel = BaseDbEntity & Post;

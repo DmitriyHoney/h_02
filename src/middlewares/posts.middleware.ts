@@ -1,6 +1,6 @@
 import { body, validationResult } from 'express-validator';
 
-export const createBlogsBody = [
+export const createPostsBody = [
     body('name')
         .notEmpty().withMessage('Field is required')
         .isString().withMessage('Field must be string')

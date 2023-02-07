@@ -1,14 +1,14 @@
 import request from 'supertest';
 import { app, HTTP_STATUSES } from '../index';
-import { Blog, BlogModel } from '../types/types';
+import { Post, PostModel } from '../types/types';
 
-describe('/blogs', () => {
-    const testInvalidRow = { name: 'Apple', description: 'This is Apple' };
-    const testValidRow: Blog = { description: 'test descr 1', name: 'test1', websiteUrl: 'https://ya.ru' };
-    const testValidUpdateRow: Blog = { description: 'test descr 2', name: 'test 2', websiteUrl: 'https://ya.ru'  };
-    const url = '/ht_02/api/blogs';
+describe('/posts', () => {
+    const testInvalidRow = { blogId: '122', blogName: 't1', content: 'cnt1' };
+    const testValidRow: Post = { blogId: '122', blogName: 't1', content: 'cnt1', shortDescription: 'short1', title: 't1' };
+    const testValidUpdateRow: Post = { blogId: '122', blogName: 't2', content: 'cnt2', shortDescription: 'short2', title: 't2'  };
+    const url = '/ht_02/api/posts';
     const testDel = '/ht_02/api/testing/all-data/';
-    let createdRow: BlogModel;
+    let createdRow: PostModel;
     beforeAll(async () => {
         await request(app).delete(testDel)
     });
@@ -19,13 +19,13 @@ describe('/blogs', () => {
             .expect(HTTP_STATUSES.OK_200, [])
     });
 
-    it('should return 404 for not found blog', async () => {
+    it('should return 404 for not found post', async () => {
         await request(app)
             .get(`${url}/825`)
             .expect(HTTP_STATUSES.NOT_FOUND_404)
     });
 
-    it('shouldn`t create blog with incorrect input data', async () => {
+    it('shouldn`t create post with incorrect input data', async () => {
         await request(app)
             .post(url)
             .send(testInvalidRow)
@@ -36,7 +36,7 @@ describe('/blogs', () => {
             .expect(HTTP_STATUSES.OK_200, [])
     });
 
-    it('should create blog with correct input data', async () => {
+    it('should create post with correct input data', async () => {
         const result = await request(app)
             .post(url)
             .send(testValidRow)
@@ -45,9 +45,11 @@ describe('/blogs', () => {
         createdRow = result.body;
         expect(result.body).toEqual({
             id: expect.any(Number),
-            name: testValidRow.name,
-            description: testValidRow.description,
-            websiteUrl: testValidRow.websiteUrl,
+            blogId: testValidRow.blogId,
+            content: testValidRow.content,
+            blogName: testValidRow.blogName,
+            shortDescription: testValidRow.shortDescription,
+            title: testValidRow.title,
         });
 
         await request(app)
@@ -55,20 +57,22 @@ describe('/blogs', () => {
             .expect(HTTP_STATUSES.OK_200, [createdRow])
     });
 
-    it('should get blog by id', async () => {
+    it('should get post by id', async () => {
         const result = await request(app)
             .get(`${url}/${createdRow.id}/`)
             .expect(HTTP_STATUSES.OK_200, createdRow)
 
         expect(result.body).toEqual({
             id: expect.any(Number),
-            name: testValidRow.name,
-            description: testValidRow.description,
-            websiteUrl: testValidRow.websiteUrl,
+            blogId: testValidRow.blogId,
+            content: testValidRow.content,
+            blogName: testValidRow.blogName,
+            shortDescription: testValidRow.shortDescription,
+            title: testValidRow.title,
         });
     });
 
-    it('should put blog', async () => {
+    it('should put post', async () => {
         const result = await request(app)
             .put(`${url}/${createdRow.id}/`)
             .send(testValidUpdateRow)
@@ -77,7 +81,7 @@ describe('/blogs', () => {
         expect(result.body).toEqual({});
     });
 
-    it('should delete blog', async () => {
+    it('should delete post', async () => {
         const result = await request(app)
             .delete(`${url}/${createdRow.id}/`)
             .send(createdRow)

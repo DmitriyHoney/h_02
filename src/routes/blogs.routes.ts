@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import blogsController from '../controllers/blogs.controller';
 const router = Router();
-import { createProductBody as validatorMiddleware } from '../middlewares/blogs.middleware';
+import { createBlogsBody as validatorMiddleware } from '../middlewares/blogs.middleware';
 import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
 
 router.get('/', blogsController.getAll);

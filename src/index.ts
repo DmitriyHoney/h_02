@@ -1,9 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import productsRoute from './routes/blogs.routes';
+import postsRoute from './routes/posts.routes';
 import testRoute from './routes/test.routes';
 
-const PORT = 3001;
+const PORT = 4080;
 export const app = express();
 
 export const HTTP_STATUSES = {
@@ -19,6 +20,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => res.send('Hello, world!'));
+app.use('/ht_02/api/posts', postsRoute);
 app.use('/ht_02/api/blogs', productsRoute);
 app.use('/ht_02/api/testing/all-data', testRoute);
 

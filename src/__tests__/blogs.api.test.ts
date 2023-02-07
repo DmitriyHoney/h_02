@@ -28,6 +28,7 @@ describe('/blogs', () => {
     it('shouldn`t create blog with incorrect input data', async () => {
         await request(app)
             .post(url)
+            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
             .send(testInvalidRow)
             .expect(HTTP_STATUSES.BAD_REQUEST_400)
 

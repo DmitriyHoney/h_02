@@ -1,29 +1,27 @@
-interface GenericRepoLayerFn<ItemType, PayloadCreate, PayloadUpdate> {
+import { BaseDbEntity } from '../types/types';
+
+interface GenericRepoLayerFn<ItemType, Payload> {
     find: () => Array<ItemType>
     findById: (id: number) => ItemType | null
-    create: (payload: PayloadCreate) => ItemType
-    update: (id: number, payload: PayloadUpdate) => boolean
+    create: (payload: Payload) => ItemType
+    update: (id: number, payload: Payload) => boolean
     delete: (id: number) => boolean
     _deleteAll: () => boolean
 }
 
-interface IRow {
-    id: number
-    createdAt: string
-}
    
-export default function generateBaseRepo<I extends IRow, P, U>(items: Array<I>, custom: Object): GenericRepoLayerFn<I, P, U> {
+export default function generateBaseRepo<I extends BaseDbEntity, P>(items: Array<I>, custom: Object = {}): GenericRepoLayerFn<I, P> {
     return {
         find: () => items,
         findById: (id: number) => items.find((i: I) => i.id === id) || null,
         create: (payload: P) => {
             const curDate = new Date();
             // @ts-ignore
-            const newRow: I = { id: +curDate, createdAt: curDate.toISOString(), ...payload };
+            const newRow: I = { id: +curDate, ...payload };
             items.push(newRow);
             return newRow;
         },
-        update(id: number, payload: U) {
+        update(id: number, payload: P) {
             let row = this.findById(id);
             if (!row) return false;
             // @ts-ignore

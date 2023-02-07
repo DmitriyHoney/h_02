@@ -1,8 +1,8 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import productsRoute from './routes/product.routes';
+import productsRoute from './routes/blogs.routes';
 
-const PORT = 3000;
+const PORT = 3001;
 export const app = express();
 
 export const HTTP_STATUSES = {
@@ -18,6 +18,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => res.send('Hello, world!'));
-app.use('/api/v1/products', productsRoute);
+app.use('/ht_02/api/blogs', productsRoute);
 
 app.listen(PORT, () => console.log(`http://localhost:${PORT}`))

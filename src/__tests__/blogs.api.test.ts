@@ -9,8 +9,14 @@ describe('/blogs', () => {
     const url = '/ht_02/api/blogs';
     const testDel = '/ht_02/api/testing/all-data/';
     let createdRow: BlogModel;
+
+    // @ts-ignore
+    const requestWithHeader = (method, args) => request(app)[method](args).set('Authorization', 'Basic YWRtaW46cXdlcnR5');
+    // @ts-ignore
+    const requestIncorrectHeader = (method, args) => request(app)[method](args).set('Authorization', 'Basic YWRtaW46cXdlfdsf5');
+
     beforeAll(async () => {
-        await request(app).delete(testDel)
+        await request(app).delete(testDel);
     });
 
     it('should return 200 and empty array', async () => {
@@ -26,9 +32,7 @@ describe('/blogs', () => {
     });
 
     it('shouldn`t create blog with incorrect input data', async () => {
-        await request(app)
-            .post(url)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+        await requestWithHeader('post', url)
             .send(testInvalidRow)
             .expect(HTTP_STATUSES.BAD_REQUEST_400)
 
@@ -38,8 +42,7 @@ describe('/blogs', () => {
     });
 
     it('should create blog with correct input data', async () => {
-        const result = await request(app)
-            .post(url)
+        const result = await requestWithHeader('post', url)
             .send(testValidRow)
             .expect(HTTP_STATUSES.CREATED_201)
 
@@ -70,8 +73,7 @@ describe('/blogs', () => {
     });
 
     it('should put blog', async () => {
-        const result = await request(app)
-            .put(`${url}/${createdRow.id}/`)
+        const result = await requestWithHeader('put', `${url}/${createdRow.id}/`)
             .send(testValidUpdateRow)
             .expect(HTTP_STATUSES.NO_CONTENT_204);
 
@@ -79,8 +81,7 @@ describe('/blogs', () => {
     });
 
     it('should delete blog', async () => {
-        const result = await request(app)
-            .delete(`${url}/${createdRow.id}/`)
+        const result = await requestWithHeader('delete', `${url}/${createdRow.id}/`)
             .send(createdRow)
             .expect(HTTP_STATUSES.NO_CONTENT_204);
 

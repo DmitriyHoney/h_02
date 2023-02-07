@@ -9,6 +9,12 @@ describe('/posts', () => {
     const url = '/ht_02/api/posts';
     const testDel = '/ht_02/api/testing/all-data/';
     let createdRow: PostModel;
+
+    // @ts-ignore
+    const requestWithHeader = (method, args) => request(app)[method](args).set('Authorization', 'Basic YWRtaW46cXdlcnR5');
+    // @ts-ignore
+    const requestIncorrectHeader = (method, args) => request(app)[method](args).set('Authorization', 'Basic YWRtaW46cXdlfdsf5');
+
     beforeAll(async () => {
         await request(app).delete(testDel)
     });
@@ -20,16 +26,12 @@ describe('/posts', () => {
     });
 
     it('should return 404 for not found post', async () => {
-        await request(app)
-            .get(`${url}/825`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+        await requestWithHeader('get', `${url}/825`)
             .expect(HTTP_STATUSES.NOT_FOUND_404)
     });
 
     it('shouldn`t create post with incorrect input data', async () => {
-        await request(app)
-            .post(url)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+        await requestWithHeader('post', url)
             .send(testInvalidRow)
             .expect(HTTP_STATUSES.BAD_REQUEST_400)
 
@@ -38,10 +40,19 @@ describe('/posts', () => {
             .expect(HTTP_STATUSES.OK_200, [])
     });
 
-    it('should create post with correct input data', async () => {
-        const result = await request(app)
+    it('shouldn`t create post with not Basic Auth', async () => {
+        await request(app)
             .post(url)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+            .send(testInvalidRow)
+            .expect(HTTP_STATUSES.NOT_AUTHORIZED_401)
+
+        await request(app)
+            .get(url)
+            .expect(HTTP_STATUSES.OK_200, [])
+    });
+
+    it('should create post with correct input data', async () => {
+        const result = await requestWithHeader('post', url)
             .send(testValidRow)
             .expect(HTTP_STATUSES.CREATED_201)
 
@@ -61,9 +72,7 @@ describe('/posts', () => {
     });
 
     it('should get post by id', async () => {
-        const result = await request(app)
-            .get(`${url}/${createdRow.id}/`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+        const result = await requestWithHeader('get', `${url}/${createdRow.id}/`)
             .send(testValidRow)
             .expect(HTTP_STATUSES.OK_200, createdRow)
 
@@ -78,9 +87,7 @@ describe('/posts', () => {
     });
 
     it('should put post', async () => {
-        const result = await request(app)
-            .put(`${url}/${createdRow.id}/`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+        const result = await requestWithHeader('put', `${url}/${createdRow.id}/`)
             .send(testValidUpdateRow)
             .expect(HTTP_STATUSES.NO_CONTENT_204);
 
@@ -88,9 +95,7 @@ describe('/posts', () => {
     });
 
     it('should delete post', async () => {
-        const result = await request(app)
-            .delete(`${url}/${createdRow.id}/`)
-            .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+        const result = await requestWithHeader('delete', `${url}/${createdRow.id}/`)
             .send(createdRow)
             .expect(HTTP_STATUSES.NO_CONTENT_204);
 

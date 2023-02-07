@@ -6,4 +6,6 @@ const products: Array<BlogModel> = [
     { id: 2, name: 'Samsung', description: 'Samsung corporation', websiteUrl: 'https://samsung.com' },
 ];
 
-export default generateBaseRepo<BlogModel, Blog>(products, {});
+type BlogsRepoCustom = {}
+
+export default generateBaseRepo<BlogModel, Blog, BlogsRepoCustom>(products, {});

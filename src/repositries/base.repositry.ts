@@ -10,7 +10,7 @@ interface GenericRepoLayerFn<ItemType, Payload> {
 }
 
    
-export default function generateBaseRepo<I extends BaseDbEntity, P>(items: Array<I>, custom: Object = {}): GenericRepoLayerFn<I, P> {
+export default function generateBaseRepo<I extends BaseDbEntity, P, C>(items: Array<I>, custom: C): GenericRepoLayerFn<I, P> & C {
     return {
         find: () => items,
         findById: (id: number) => items.find((i: I) => i.id === id) || null,

@@ -25,7 +25,9 @@ export default function generateBaseRepo<I extends BaseDbEntity, P, C>(items: Ar
             let row = this.findById(id);
             if (!row) return false;
             // @ts-ignore
-            row = { ... payload };
+            row = { ...row, ...payload };
+            // @ts-ignore
+            items = items.map((i) => i.id === id ? row : i)
             return true;
         },
         delete(id: string) {

@@ -17,7 +17,7 @@ export default function generateBaseRepo<I extends BaseDbEntity, P, C>(items: Ar
         create: (payload: P) => {
             const curDate = new Date();
             // @ts-ignore
-            const newRow: I = { id: String(curDate), ...payload };
+            const newRow: I = { id: String(curDate.getTime()), ...payload };
             items.push(newRow);
             return newRow;
         },

@@ -21,8 +21,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => res.send('Hello, world!'));
-app.use('/ht_02/api/posts', postsRoute);
-app.use('/ht_02/api/blogs', productsRoute);
-app.use('/ht_02/api/testing/all-data', testRoute);
+app.use('/api/posts', postsRoute);
+app.use('/api/blogs', productsRoute);
+app.use('/api/testing/all-data', testRoute);
 
 app.listen(PORT, () => console.log(`http://localhost:${PORT}`))

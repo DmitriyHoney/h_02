@@ -6,8 +6,8 @@ describe('/posts', () => {
     const testInvalidRow = { blogId: '122', blogName: 't1', content: 'cnt1' };
     const testValidRow: Post = { blogId: '122', blogName: 't1', content: 'cnt1', shortDescription: 'short1', title: 't1' };
     const testValidUpdateRow: Post = { blogId: '122', blogName: 't2', content: 'cnt2', shortDescription: 'short2', title: 't2'  };
-    const url = '/ht_02/api/posts';
-    const testDel = '/ht_02/api/testing/all-data/';
+    const url = '/api/posts';
+    const testDel = '/api/testing/all-data/';
     let createdRow: PostModel;
 
     // @ts-ignore

@@ -6,8 +6,8 @@ describe('/blogs', () => {
     const testInvalidRow = { name: 'Apple', description: 'This is Apple' };
     const testValidRow: Blog = { description: 'test descr 1', name: 'test1', websiteUrl: 'https://ya.ru' };
     const testValidUpdateRow: Blog = { description: 'test descr 2', name: 'test 2', websiteUrl: 'https://ya.ru'  };
-    const url = '/ht_02/api/blogs';
-    const testDel = '/ht_02/api/testing/all-data/';
+    const url = '/api/blogs';
+    const testDel = '/api/testing/all-data/';
     let createdRow: BlogModel;
 
     // @ts-ignore

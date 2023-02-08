@@ -5,10 +5,6 @@ const posts: Array<PostModel> = [
     { id: '1', blogId: '17', blogName: 'Blog 1', content: 'dasdasdsd', shortDescription: 'ss', title: 'title 11' },
 ];
 
-type PostsRepoCustom = {
-    getByBlogId: (blogId: string) => PostModel | null
-}
+type PostsRepoCustom = {}
 
-export default generateBaseRepo<PostModel, Post, PostsRepoCustom>(posts, {
-    getByBlogId: (blogId: string) => posts.find((i) => i.blogId === blogId) || null,
-});
+export default generateBaseRepo<PostModel, Post, PostsRepoCustom>(posts, {});

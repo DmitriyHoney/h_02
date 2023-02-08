@@ -19,7 +19,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
   const [, authInfo] = req.headers.authorization?.split(' ');
   const [login, pwd] = Buffer.from(authInfo, 'base64').toString().split(':');
   // @ts-ignore
-  if (users[login] === pwd) {
+  if (users[login] === pwd && login && pwd) {
     next();
   } else {
     return res.status(401).send('Not authorized');

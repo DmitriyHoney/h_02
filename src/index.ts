@@ -4,7 +4,7 @@ import blogsRoute from './routes/blogs.routes';
 import postsRoute from './routes/posts.routes';
 import testRoute from './routes/test.routes';
 
-const PORT = 4080;
+const PORT = 4082;
 export const app = express();
 
 export const HTTP_STATUSES = {

@@ -6,7 +6,7 @@ export const createPostsBody = [
         .notEmpty().withMessage('Field is required')
         .isString().withMessage('Field must be string')
         .custom((value, { req }) => {
-            const isExist = BlogsRepo.getByBlogId(req.body.blogId);
+            const isExist = BlogsRepo.findById(req.body.blogId);
             if (!isExist) throw new Error(`Blog with blogId=${value} not found`);
             return true;
         }),

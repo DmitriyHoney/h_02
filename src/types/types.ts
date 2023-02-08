@@ -1,4 +1,4 @@
-export type BaseDbEntity = { id: number };
+export type BaseDbEntity = { id: string };
 
 export type Blog = {
     name: string,

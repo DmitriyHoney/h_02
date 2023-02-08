@@ -5,7 +5,7 @@ import productRepo from '../repositries/blogs.repositry';
 export default {
     getAll: (req: Request, res: Response) => res.send(productRepo.find()),
     getOne: (req: Request, res: Response) => {
-        const item = productRepo.findById(+req.params.id);
+        const item = productRepo.findById(req.params.id);
         if (!item) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
             return;
@@ -23,7 +23,7 @@ export default {
         const body = req.body;
         // TODO check validations
         // TODO check auth
-        const isUpdated = productRepo.update(+req.params.id, body);
+        const isUpdated = productRepo.update(req.params.id, body);
         if (!isUpdated) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send();
             return;
@@ -31,7 +31,7 @@ export default {
         res.status(HTTP_STATUSES.NO_CONTENT_204).send();
     },
     deleteOne: (req: Request, res: Response) => {
-        const isDeleted = productRepo.delete(+req.params.id);
+        const isDeleted = productRepo.delete(req.params.id);
         // TODO check auth
         if (!isDeleted) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');

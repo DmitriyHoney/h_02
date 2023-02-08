@@ -5,7 +5,7 @@ import postsRepo from '../repositries/posts.repositry';
 export default {
     getAll: (req: Request, res: Response) => res.send(postsRepo.find()),
     getOne: (req: Request, res: Response) => {
-        const item = postsRepo.findById(+req.params.id);
+        const item = postsRepo.findById(req.params.id);
         if (!item) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
             return;
@@ -19,7 +19,7 @@ export default {
     },
     update: (req: Request, res: Response) => {
         const body = req.body;
-        const isUpdated = postsRepo.update(+req.params.id, body);
+        const isUpdated = postsRepo.update(req.params.id, body);
         if (!isUpdated) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send();
             return;
@@ -27,7 +27,7 @@ export default {
         res.status(HTTP_STATUSES.NO_CONTENT_204).send();
     },
     deleteOne: (req: Request, res: Response) => {
-        const isDeleted = postsRepo.delete(+req.params.id);
+        const isDeleted = postsRepo.delete(req.params.id);
         if (!isDeleted) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
             return;

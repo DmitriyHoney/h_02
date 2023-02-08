@@ -48,7 +48,7 @@ describe('/blogs', () => {
 
         createdRow = result.body;
         expect(result.body).toEqual({
-            id: expect.any(Number),
+            id: expect.any(String),
             name: testValidRow.name,
             description: testValidRow.description,
             websiteUrl: testValidRow.websiteUrl,
@@ -65,7 +65,7 @@ describe('/blogs', () => {
             .expect(HTTP_STATUSES.OK_200, createdRow)
 
         expect(result.body).toEqual({
-            id: expect.any(Number),
+            id: expect.any(String),
             name: testValidRow.name,
             description: testValidRow.description,
             websiteUrl: testValidRow.websiteUrl,

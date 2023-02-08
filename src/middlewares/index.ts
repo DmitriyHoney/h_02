@@ -16,10 +16,11 @@ export const validatorsErrorsMiddleware = (req: Request, res: Response, next: Ne
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers?.authorization) return res.status(401).send('Not authorized');
-  const [, authInfo] = req.headers.authorization?.split(' ');
+  const [prefix, authInfo] = req.headers.authorization?.split(' ');
+  console.log(prefix);
   const [login, pwd] = Buffer.from(authInfo, 'base64').toString().split(':');
   // @ts-ignore
-  if (users[login] === pwd && login && pwd) {
+  if (users[login] === pwd && login && pwd && prefix.trim() === 'Basic') {
     next();
   } else {
     return res.status(401).send('Not authorized');

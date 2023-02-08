@@ -77,6 +77,8 @@ describe('/blogs', () => {
             .send(testValidUpdateRow)
             .expect(HTTP_STATUSES.NO_CONTENT_204);
 
+        
+
         expect(result.body).toEqual({});
     });
 

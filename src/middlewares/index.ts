@@ -8,7 +8,8 @@ const users = {
 export const validatorsErrorsMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const errorsMessages = errors.array().map((i) => ({ message: i.msg, field: i.location }))
+      return res.status(400).json({ errorsMessages });
     }
     next();
 };

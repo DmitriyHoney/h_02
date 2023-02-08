@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import productsRoute from './routes/blogs.routes';
+import blogsRoute from './routes/blogs.routes';
 import postsRoute from './routes/posts.routes';
 import testRoute from './routes/test.routes';
 
@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => res.send('Hello, world!'));
 app.use('/api/posts', postsRoute);
-app.use('/api/blogs', productsRoute);
+app.use('/api/blogs', blogsRoute);
 app.use('/api/testing/all-data', testRoute);
 
 app.listen(PORT, () => console.log(`http://localhost:${PORT}`))

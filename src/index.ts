@@ -1,10 +1,13 @@
+import 'dotenv/config'
 import express from 'express';
 import bodyParser from 'body-parser';
 import blogsRoute from './routes/blogs.routes';
 import postsRoute from './routes/posts.routes';
 import testRoute from './routes/test.routes';
+import { connectDB } from './db'
 
-const PORT = 4082;
+
+const PORT = process.env.PORT || 4082;
 export const app = express();
 
 export const HTTP_STATUSES = {
@@ -25,4 +28,10 @@ app.use('/api/posts', postsRoute);
 app.use('/api/blogs', blogsRoute);
 app.use('/api/testing/all-data', testRoute);
 
-app.listen(PORT, () => console.log(`http://localhost:${PORT}`))
+
+const startApp = async () => {
+    await connectDB();
+    app.listen(PORT, () => console.log(`http://localhost:${PORT}`))
+};
+
+startApp();

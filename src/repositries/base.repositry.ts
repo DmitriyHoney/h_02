@@ -1,45 +1,43 @@
-import { BaseDbEntity } from '../types/types';
-
+import { Document, WithId, InsertOneResult } from 'mongodb';
+import { collection } from '../db'
 interface GenericRepoLayerFn<ItemType, Payload> {
-    find: () => Array<ItemType>
-    findById: (id: string) => ItemType | null
-    create: (payload: Payload) => ItemType
-    update: (id: string, payload: Payload) => boolean
-    delete: (id: string) => boolean
-    _deleteAll: () => boolean
+    find: () => Promise<WithId<ItemType & Document>[]>
+    findById: (id: number) => Promise<WithId<ItemType & Document> | null>
+    create: (payload: Payload) => Promise<Payload>
+    update: (id: number, payload: Payload) => Promise<boolean>
+    delete: (id: number) => Promise<boolean>
+    _deleteAll: () => Promise<boolean>
 }
 
-   
-export default function generateBaseRepo<I extends BaseDbEntity, P, C>(items: Array<I>, custom: C): GenericRepoLayerFn<I, P> & C {
+
+export default function generateBaseRepo<I, P, C>(collectionName: string, custom: C): GenericRepoLayerFn<I, P> & C {
     return {
-        find: () => items,
-        findById: (id: string) => items.find((i: I) => i.id === id) || null,
-        create: (payload: P) => {
-            const curDate = new Date();
+        find: () => collection<I>(collectionName).find().toArray(),
+        // @ts-ignore
+        findById: (id: number) => collection<I>(collectionName).findOne({ id }),
+        
+        create: async (payload: P) => {
             // @ts-ignore
-            const newRow: I = { id: String(curDate.getTime()), ...payload };
-            items.push(newRow);
-            return newRow;
+            const res = await collection<I>(collectionName).insertOne({
+                id: new Date().getTime(),
+                payload
+            });
+            return payload;
         },
-        update(id: string, payload: P) {
-            let row = this.findById(id);
-            if (!row) return false;
+        update: async (id: number, payload: P) => {
             // @ts-ignore
-            row = { ...row, ...payload };
+            const result = await collection<I>(collectionName).updateOne({ id }, payload);
+            return result.matchedCount === 1
+        },
+        delete: async (id: number) => {
             // @ts-ignore
-            items = items.map((i) => i.id === id ? row : i)
-            return true;
+            const result = await collection<I>(collectionName).deleteOne({ id });
+            return result.deletedCount === 1;
         },
-        delete(id: string) {
-            const isExistIdx = items.findIndex((i: I) => i.id === id);
-            if (isExistIdx < 0) return false;
-            items.splice(isExistIdx, 1);
-            return true;
+        _deleteAll: async () => {
+            const result = await collection<I>(collectionName).deleteMany();
+            return result.deletedCount > 0;
         },
-       _deleteAll() {
-            items = [];
-            return true;
-       },
-       ...custom
+        ...custom
     };
 }

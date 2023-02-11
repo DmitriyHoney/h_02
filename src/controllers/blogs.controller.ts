@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { HTTP_STATUSES } from '..';
+import { HTTP_STATUSES } from '../types/types';
 import productRepo from '../repositries/blogs.repositry';
 
 export default {

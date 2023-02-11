@@ -12,21 +12,21 @@ interface GenericRepoLayerFn<ItemType, Payload> {
 
 export default function generateBaseRepo<I, P, C>(collectionName: string, custom: C): GenericRepoLayerFn<I, P> & C {
     return {
-        find: () => collection<I>(collectionName).find().toArray(),
         // @ts-ignore
-        findById: (id: number) => collection<I>(collectionName).findOne({ id }),
+        find: () => collection<I>(collectionName).find({}, { projection: { _id: 0 } }).toArray(),
+        // @ts-ignore
+        findById: (id: number) => collection<I>(collectionName).findOne({ id }, { projection: { _id: 0 } }),
         
         create: async (payload: P) => {
+            const id = new Date().getTime();
             // @ts-ignore
-            const res = await collection<I>(collectionName).insertOne({
-                id: new Date().getTime(),
-                payload
-            });
-            return payload;
+            await collection<I>(collectionName).insertOne({ id, ...payload });
+            return { id, ...payload };
         },
         update: async (id: number, payload: P) => {
+            console.log(1111, id);
             // @ts-ignore
-            const result = await collection<I>(collectionName).updateOne({ id }, payload);
+            const result = await collection<I>(collectionName).updateOne({ id }, { $set: payload });
             return result.matchedCount === 1
         },
         delete: async (id: number) => {

@@ -7,18 +7,9 @@ import testRoute from './routes/test.routes';
 import { connectDB } from './db'
 
 
-const PORT = process.env.PORT || 4082;
+const PORT = process.env.PORT || 3000;
+const PORT_TEST = process.env.PORT_TEST || 3001;
 export const app = express();
-
-export const HTTP_STATUSES = {
-    OK_200: 200,
-    CREATED_201: 201,
-    NO_CONTENT_204: 204,
-    BAD_REQUEST_400: 400,
-    NOT_AUTHORIZED_401: 401,
-    NOT_FOUND_404: 404,
-    SERVER_ERROR_500: 500,
-};
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -29,9 +20,8 @@ app.use('/api/blogs', blogsRoute);
 app.use('/api/testing/all-data', testRoute);
 
 
-const startApp = async () => {
-    await connectDB();
-    app.listen(PORT, () => console.log(`http://localhost:${PORT}`))
+export const startApp = async (isForTest: boolean = false) => {
+    await connectDB(isForTest);
+    app.listen(isForTest ? PORT_TEST : PORT, () => console.log(`http://localhost:${PORT}`));
+    return app;
 };
-
-startApp();

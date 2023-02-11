@@ -1,13 +1,14 @@
 import request from 'supertest';
-import { initTestServer } from '../helpers/index'
-import { HTTP_STATUSES, VALIDATION_ERROR_MSG, Blog, ValidationErrors } from '../types/types';
+import { HTTP_STATUSES, VALIDATION_ERROR_MSG, Post, ValidationErrors, PostModel } from '../types/types';
 import { Express } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
+import { initTestServer } from '../helpers';
+import { config as blogConfig } from './blogs.api.test';
 
-export const config = {
+const config = {
     app: null as Express | null,
     server: null as Server<typeof IncomingMessage, typeof ServerResponse> | null,
-    url: '/api/blogs',
+    url: '/api/posts',
     deleteUrl: '/api/testing/all-data/',
     basicTokens: {
         correct: 'Basic YWRtaW46cXdlcnR5',
@@ -17,33 +18,41 @@ export const config = {
         incorrect4: '',
     },
     validBody: {
-        name: 'Post 1',
-        description: 'Description post 1',
-        websiteUrl: 'https://ya.ru',
-        isMembership: false,
-    } as Blog,
+        blogId: '442',
+        blogName: 'Bike sport',
+        content: 'this is content tell us about bike and extreme sport...',
+        shortDescription: 'short descr',
+        title: 'Bike',
+    } as Post,
     validBodyForUpdate: {
-        name: 'Post 2',
-        description: 'Description post 2',
-        websiteUrl: 'https://mail.ru',
-        isMembership: false,
-    } as Blog,
+        blogId: '442',
+        blogName: 'Bike sport 2',
+        content: 'this is content tell us about bike and extreme sport 2...',
+        shortDescription: 'short descr 2',
+        title: 'Bike 2',
+    } as Post,
 };
 // @ts-ignore
 const reqWithAuthHeader = (app, method, url, token) => request(app)[method](url).set('Authorization', token);
 
-describe('/blogs', () => {
+describe('/posts', () => {
     const { 
         url, deleteUrl, basicTokens, validBody,
         validBodyForUpdate,
     } = config;
+    let createdBlog: PostModel | null = null;
     beforeAll(async () => {
         const init = await initTestServer();
         config.app = init.app;
         config.server = init.server;
-
         await request(config.app).delete(deleteUrl)
             .expect(HTTP_STATUSES.NO_CONTENT_204, {})
+
+        const created = await reqWithAuthHeader(config.app, 'post', blogConfig.url, basicTokens.correct)
+            .send(blogConfig.validBody)
+            .expect(HTTP_STATUSES.CREATED_201);
+
+        createdBlog = created.body;
     });
     afterAll(() => config.server?.close());
 
@@ -123,13 +132,17 @@ describe('/blogs', () => {
         
         test('Basic Token - should create', async () => {
             item = await reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
-                .send(validBody)
+                .send({
+                    ...validBody,
+                    blogId: String(createdBlog?.id)
+                })
                 .expect(HTTP_STATUSES.CREATED_201)
             
             expect(item.body).toEqual({ 
                 id: expect.any(Number),
                 createdAt: expect.any(String),
-                ...validBody 
+                ...validBody,
+                blogId: String(createdBlog?.id)
             });
         });
         test('Check item has been created', async () => {
@@ -141,8 +154,11 @@ describe('/blogs', () => {
             expect(resultAll.body[0].id).toEqual(item.body.id)
         });
         test('Check updated item', async () => {
-            await reqWithAuthHeader(config.app, 'put', `${url}/${item.body.id}`, basicTokens.correct)
-                .send(validBodyForUpdate)
+            const updtRes = await reqWithAuthHeader(config.app, 'put', `${url}/${item.body.id}`, basicTokens.correct)
+                .send({
+                    ...validBodyForUpdate,
+                    blogId: String(createdBlog?.id)
+                })
                 .expect(HTTP_STATUSES.NO_CONTENT_204)
 
             const updatedItem = await request(config.app)
@@ -152,7 +168,8 @@ describe('/blogs', () => {
             expect(updatedItem.body).toEqual({
                 id: item.body.id,
                 createdAt: item.body.createdAt,
-                ...validBodyForUpdate
+                ...validBodyForUpdate,
+                blogId: String(createdBlog?.id)
             });
         })
         test('Check item has been deleted', async () => {
@@ -175,7 +192,10 @@ describe('/blogs', () => {
         });
         test('UPDATE', async () => {
             await reqWithAuthHeader(config.app, 'put', `${url}/778`, basicTokens.correct)
-                .send(validBodyForUpdate)
+                .send({
+                    ...validBodyForUpdate,
+                    blogId: String(createdBlog?.id)
+                })
                 .expect(HTTP_STATUSES.NOT_FOUND_404, {})
         });
         test('DELETE', async () => {
@@ -191,9 +211,11 @@ describe('/blogs', () => {
                 .expect(HTTP_STATUSES.BAD_REQUEST_400)
             expect(result.body).toEqual({
                 errorsMessages: [
-                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'name' },
-                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'description' },
-                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'websiteUrl' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'title' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'shortDescription' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'content' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogId' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogName' },
                 ]
             } as ValidationErrors );
         });
@@ -201,16 +223,20 @@ describe('/blogs', () => {
         test('CHECK TYPES FIELDS', async () => {
             const result = await reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
                 .send({
-                    name: 12,
-                    description: false,
-                    websiteUrl: { a: 1 }
+                    title: 12,
+                    shortDescription: false,
+                    content: 12,
+                    blogId: false,
+                    blogName: { a: 1 }
                 })
                 .expect(HTTP_STATUSES.BAD_REQUEST_400)
             expect(result.body).toEqual({
                 errorsMessages: [
-                    { message: VALIDATION_ERROR_MSG.IS_STRING, field: 'name' },
-                    { message: VALIDATION_ERROR_MSG.IS_STRING, field: 'description' },
-                    { message: VALIDATION_ERROR_MSG.IS_URL, field: 'websiteUrl' },
+                    { message: VALIDATION_ERROR_MSG.IS_STRING, field: 'title' },
+                    { message: VALIDATION_ERROR_MSG.IS_STRING, field: 'shortDescription' },
+                    { message: VALIDATION_ERROR_MSG.IS_STRING, field: 'content' },
+                    { message: VALIDATION_ERROR_MSG.IS_STRING, field: 'blogId' },
+                    { message: VALIDATION_ERROR_MSG.IS_STRING, field: 'blogName' },
                 ]
             } as ValidationErrors );
         });
@@ -218,32 +244,40 @@ describe('/blogs', () => {
         test('CHECK EMPTY FIELDS', async () => {
             const result = await reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
                 .send({
-                    name: "    ",
-                    description: "   ",
-                    websiteUrl: "    "
+                    title: "   ",
+                    shortDescription: "   ",
+                    content: "   ",
+                    blogId: "   ",
+                    blogName: "   "
                 })
                 .expect(HTTP_STATUSES.BAD_REQUEST_400)
             expect(result.body).toEqual({
                 errorsMessages: [
-                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'name' },
-                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'description' },
-                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'websiteUrl' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'title' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'shortDescription' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'content' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogId' },
+                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogName' },
                 ]
             } as ValidationErrors );
         });
 
-        test('CHECK OUT OF RANGE FIELDS', async () => {
+        test('CHECK OUT OF RANGE FIELDS AND NOT BLOG THIS BLOG_ID', async () => {
             const result = await reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
                 .send({
-                    name: "A",
-                    description: "B",
-                    websiteUrl: "https://ya.ru"
+                    title: "asdqwertgdsdeerwerwerewrasdqwertgdsdeerwerwerewr",
+                    shortDescription: "a",
+                    content: "a",
+                    blogId: "235",
+                    blogName: "asd"
                 })
                 .expect(HTTP_STATUSES.BAD_REQUEST_400)
             expect(result.body).toEqual({
                 errorsMessages: [
-                    { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'name' },
-                    { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'description' },
+                    { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'title' },
+                    { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'shortDescription' },
+                    { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'content' },
+                    { message: VALIDATION_ERROR_MSG.BLOG_ID_NOT_FOUND, field: 'blogId' },
                 ]
             } as ValidationErrors );
         });

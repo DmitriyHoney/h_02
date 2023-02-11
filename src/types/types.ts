@@ -5,6 +5,7 @@ export const VALIDATION_ERROR_MSG = {
     IS_BOOLEAN: 'Field must be a boolean',
     IS_URL: 'Field must be an url',
     OUT_OF_RANGE: 'Field is out of range',
+    BLOG_ID_NOT_FOUND: 'Blog with blogId not found'
 };
 
 export const HTTP_STATUSES = {
@@ -23,12 +24,13 @@ export type ValidationErrors = {
     errorsMessages: Array<ValidationError>
 }
 
-export type BaseDbEntity = { id: number };
+export type BaseDbEntity = { id: number, createdAt: string };
 
 export type Blog = {
     name: string,
     description: string,
-    websiteUrl: string
+    websiteUrl: string,
+    isMembership?: boolean
 }
 
 export type Post = {

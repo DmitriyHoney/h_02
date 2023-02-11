@@ -18,10 +18,18 @@ export default function generateBaseRepo<I, P, C>(collectionName: string, custom
         findById: (id: number) => collection<I>(collectionName).findOne({ id }, { projection: { _id: 0 } }),
         
         create: async (payload: P) => {
-            const id = new Date().getTime();
+            const curDate = new Date();
             // @ts-ignore
-            await collection<I>(collectionName).insertOne({ id, ...payload });
-            return { id, ...payload };
+            await collection<I>(collectionName).insertOne({ 
+                id: curDate.getTime(),
+                createdAt: curDate.toISOString(),
+                ...payload 
+            });
+            return {
+                id: curDate.getTime(),
+                createdAt: curDate.toISOString(),
+                ...payload
+            };
         },
         update: async (id: number, payload: P) => {
             console.log(1111, id);

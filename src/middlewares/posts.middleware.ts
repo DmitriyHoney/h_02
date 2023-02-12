@@ -32,8 +32,6 @@ export const createPostsBody = [
             return true;
         }),
     body('blogName')
-        .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
-        .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()
-        .trim()
-        .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED),
+        .optional()
+        .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail(),
 ]

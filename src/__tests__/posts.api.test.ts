@@ -215,7 +215,6 @@ describe('/posts', () => {
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'shortDescription' },
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'content' },
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogId' },
-                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogName' },
                 ]
             } as ValidationErrors );
         });
@@ -227,7 +226,7 @@ describe('/posts', () => {
                     shortDescription: false,
                     content: 12,
                     blogId: false,
-                    blogName: { a: 1 }
+                    blogName: 12
                 })
                 .expect(HTTP_STATUSES.BAD_REQUEST_400)
             expect(result.body).toEqual({
@@ -248,7 +247,6 @@ describe('/posts', () => {
                     shortDescription: "   ",
                     content: "   ",
                     blogId: "   ",
-                    blogName: "   "
                 })
                 .expect(HTTP_STATUSES.BAD_REQUEST_400)
             expect(result.body).toEqual({
@@ -257,7 +255,6 @@ describe('/posts', () => {
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'shortDescription' },
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'content' },
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogId' },
-                    { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogName' },
                 ]
             } as ValidationErrors );
         });

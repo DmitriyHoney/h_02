@@ -38,7 +38,7 @@ export type Post = {
     shortDescription: string,
     content: string,
     blogId: string,
-    blogName: string,
+    blogName?: string,
 }
 
 export type BlogModel = BaseDbEntity & Blog;

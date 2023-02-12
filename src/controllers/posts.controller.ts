@@ -16,7 +16,10 @@ export default {
         res.status(HTTP_STATUSES.OK_200).send(item);
     },
     create: async (req: Request, res: Response) => {
-        const item = await postsRepo.create(req.body);
+        const item = await postsRepo.create({
+            ...req.body,
+            blogName: req.body.blogName ? req.body.blogName : ''
+        });
         res.status(HTTP_STATUSES.CREATED_201).send(item);
     },
     update: async (req: Request, res: Response) => {

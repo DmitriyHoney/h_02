@@ -22,6 +22,6 @@ app.use('/api/testing/all-data', testRoute);
 
 export const startApp = async (isForTest: boolean = false) => {
     await connectDB(isForTest);
-    const server = app.listen(isForTest ? PORT_TEST : PORT, () => console.log(`http://localhost:${PORT}`));
+    const server = app.listen(isForTest ? PORT_TEST : PORT, () => console.log(`http://localhost:${isForTest ? PORT_TEST : PORT}`));
     return { app, server };
 };

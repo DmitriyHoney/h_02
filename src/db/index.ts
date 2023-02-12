@@ -11,7 +11,7 @@ export const connectDB = async (isForTest: boolean = false) => {
         : process.env.DB_NAME || 'prod_db';
     try {
         await client.connect();
-        console.log('Connected successfully to server')
+        console.log(`Connected successfully to server === ${dbName}`)
     } catch (e) {
         console.error(e);
     }

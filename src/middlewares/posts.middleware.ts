@@ -27,7 +27,7 @@ export const createPostsBody = [
         .trim()
         .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
         .custom(async (v, { req }) => {
-            const isExist = await BlogsRepo.findById(+req.body.blogId);
+            const isExist = await BlogsRepo.findById(req.body.blogId);
             if (!isExist) throw new Error(VALIDATION_ERROR_MSG.BLOG_ID_NOT_FOUND);
             return true;
         }),

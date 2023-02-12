@@ -24,7 +24,7 @@ export type ValidationErrors = {
     errorsMessages: Array<ValidationError>
 }
 
-export type BaseDbEntity = { id: number, createdAt: string };
+export type BaseDbEntity = { id: string, createdAt: string };
 
 export type Blog = {
     name: string,

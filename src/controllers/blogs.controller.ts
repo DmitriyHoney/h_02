@@ -8,7 +8,7 @@ export default {
         res.send(result);
     },
     getOne: async (req: Request, res: Response) => {
-        const item = await blogsRepo.findById(+req.params.id);
+        const item = await blogsRepo.findById(req.params.id);
         if (!item) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
             return;
@@ -22,13 +22,13 @@ export default {
         res.status(HTTP_STATUSES.CREATED_201).send(item);
     },
     update: async (req: Request, res: Response) => {
-        const isUpdated = await blogsRepo.update(+req.params.id, req.body);
+        const isUpdated = await blogsRepo.update(req.params.id, req.body);
         return isUpdated
             ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()
             : res.status(HTTP_STATUSES.NOT_FOUND_404).send();
     },
     deleteOne: async (req: Request, res: Response) => {
-        const isDeleted = await blogsRepo.delete(+req.params.id);
+        const isDeleted = await blogsRepo.delete(req.params.id);
         return isDeleted
             ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()
             : res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');

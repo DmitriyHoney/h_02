@@ -127,7 +127,7 @@ describe('/blogs', () => {
                 .expect(HTTP_STATUSES.CREATED_201)
             
             expect(item.body).toEqual({ 
-                id: expect.any(Number),
+                id: expect.any(String),
                 createdAt: expect.any(String),
                 ...validBody 
             });

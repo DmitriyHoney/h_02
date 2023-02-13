@@ -1,4 +1,4 @@
-import { Document, WithId, InsertOneResult } from 'mongodb';
+import { Document, WithId } from 'mongodb';
 import { collection } from '../db'
 interface GenericRepoLayerFn<ItemType, Payload> {
     find: () => Promise<WithId<ItemType & Document>[]>

@@ -1,13 +1,41 @@
-import { Router } from 'express';
-import postsController from '../controllers/posts.controller';
+import { Router, Request, Response } from 'express';
+import postsDomain from '../domain/posts.domain';
 const router = Router();
 import { createPostsBody as validatorMiddleware } from '../middlewares/posts.middleware';
 import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
+import { HTTP_STATUSES } from '../types/types';
 
-router.get('/', postsController.getAll);
-router.get('/:id/', postsController.getOne);
-router.post('/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, postsController.create);
-router.put('/:id/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, postsController.update);
-router.delete('/:id/', authMiddleware, postsController.deleteOne);
+router.get('/', async (req: Request, res: Response) => {
+    const result = await postsDomain.getAll();
+    res.send(result);
+});
+
+router.get('/:id/', async (req: Request, res: Response) => {
+    const result = await postsDomain.getOne(req.params.id);
+    if (!result) {
+        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+        return;
+    }
+    res.status(HTTP_STATUSES.OK_200).send(result);
+});
+
+router.post('/',  authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    const result = await postsDomain.create(req.body);
+    res.status(HTTP_STATUSES.CREATED_201).send(result);
+});
+
+router.put('/:id/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    const isUpdated = await postsDomain.update(req.params.id, req.body);
+    return isUpdated
+        ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()
+        : res.status(HTTP_STATUSES.NOT_FOUND_404).send();
+});
+
+router.delete('/:id/', authMiddleware, async (req: Request, res: Response) => {
+    const isDeleted = await postsDomain.deleteOne(req.params.id);
+    return isDeleted
+        ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()
+        : res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+});
 
 export default router;

@@ -43,7 +43,7 @@ export function generateBaseCommandRepo<I, P, C>(collectionName: string, custom:
     };
 }
 
-
+// по умолчанию возвращается весь объект кроме _id
 export function generateBaseQueryRepo<I, C>(collectionName: string, custom: C): GenericRepoQueryLayerFn<I> & C {
     return {
         find: () => collection<I>(collectionName).find({}, { projection: { _id: 0 } }).toArray(),

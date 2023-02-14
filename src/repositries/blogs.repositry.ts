@@ -5,5 +5,5 @@ type BlogsCommandRepoCustom = {}
 export const blogsCommandRepo =  generateBaseCommandRepo<BlogModel, Blog, BlogsCommandRepoCustom>('blogs', {});
 
 type BlogsQueryRepoCustom = {}
-// TODO сделать маперы на queryRepo 
+// Здесь делать map and types for returned query objects
 export const blogsQueryRepo = generateBaseQueryRepo<BlogModel, BlogsQueryRepoCustom>('blogs', {});

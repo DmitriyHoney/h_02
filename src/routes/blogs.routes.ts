@@ -1,17 +1,19 @@
 import { Router, Request, Response } from 'express';
-import blogsDomain from '../domain/blogs.domain';
-const router = Router();
 import { createBlogsBody as validatorMiddleware } from '../middlewares/blogs.middleware';
 import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
 import { HTTP_STATUSES } from '../types/types';
+import { blogsQueryRepo } from '../repositries/blogs.repositry';
+import blogsDomain from '../domain/blogs.domain';
+
+const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
-    const result = await blogsDomain.getAll();
+    const result = await blogsQueryRepo.find();
     res.send(result);
 });
 
 router.get('/:id/', async (req: Request, res: Response) => {
-    const result = await blogsDomain.getOne(req.params.id);
+    const result = await blogsQueryRepo.findById(req.params.id);
     if (!result) {
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;

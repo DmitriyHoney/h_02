@@ -1,22 +1,21 @@
 import { Document, WithId } from 'mongodb';
 import { collection } from '../db'
-interface GenericRepoLayerFn<ItemType, Payload> {
-    find: () => Promise<WithId<ItemType & Document>[]>
-    findById: (id: string) => Promise<WithId<ItemType & Document> | null>
+
+interface GenericRepoCommandLayerFn<Payload> {
     create: (payload: Payload) => Promise<Payload>
     update: (id: string, payload: Payload) => Promise<boolean>
     delete: (id: string) => Promise<boolean>
     _deleteAll: () => Promise<boolean>
 }
 
+interface GenericRepoQueryLayerFn<ItemType> {
+    find: () => Promise<WithId<ItemType & Document>[]>
+    findById: (id: string) => Promise<WithId<ItemType & Document> | null>
+}
 
-export default function generateBaseRepo<I, P, C>(collectionName: string, custom: C): GenericRepoLayerFn<I, P> & C {
+
+export function generateBaseCommandRepo<I, P, C>(collectionName: string, custom: C): GenericRepoCommandLayerFn<P> & C {
     return {
-        // @ts-ignore
-        find: () => collection<I>(collectionName).find({}, { projection: { _id: 0 } }).toArray(),
-        // @ts-ignore
-        findById: (id: string) => collection<I>(collectionName).findOne({ id }, { projection: { _id: 0 } }),
-        
         create: async (payload: P) => {
             const curDate = new Date();
             // @ts-ignore
@@ -45,6 +44,16 @@ export default function generateBaseRepo<I, P, C>(collectionName: string, custom
             const result = await collection<I>(collectionName).deleteMany();
             return result.deletedCount > 0;
         },
+        ...custom
+    };
+}
+
+
+export function generateBaseQueryRepo<I, C>(collectionName: string, custom: C): GenericRepoQueryLayerFn<I> & C {
+    return {
+        find: () => collection<I>(collectionName).find({}, { projection: { _id: 0 } }).toArray(),
+        // @ts-ignore
+        findById: (id: string) => collection<I>(collectionName).findOne({ id }, { projection: { _id: 0 } }),
         ...custom
     };
 }

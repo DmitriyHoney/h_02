@@ -1,16 +1,15 @@
-import blogsRepo from '../repositries/blogs.repositry';
+import { blogsCommandRepo } from '../repositries/blogs.repositry';
 import { Blog } from '../types/types';
 
 export default {
-    getAll: async () => await blogsRepo.find(),
-    getOne: async (id: string) => await blogsRepo.findById(id),
     create: async (body: Blog) => {
-        return await blogsRepo.create({
+        const res = await blogsCommandRepo.create({
             ...body, 
             isMembership: false,
         });
+        return res;
     },
-    update: async (id: string, body: Blog) => await blogsRepo.update(id, body),
-    deleteOne: async (id: string) => await blogsRepo.delete(id),
-    deleteAll: async () => await blogsRepo._deleteAll()
+    update: async (id: string, body: Blog) => await blogsCommandRepo.update(id, body),
+    deleteOne: async (id: string) => await blogsCommandRepo.delete(id),
+    deleteAll: async () => await blogsCommandRepo._deleteAll()
 };

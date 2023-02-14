@@ -1,17 +1,19 @@
 import { Router, Request, Response } from 'express';
-import postsDomain from '../domain/posts.domain';
-const router = Router();
 import { createPostsBody as validatorMiddleware } from '../middlewares/posts.middleware';
 import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
 import { HTTP_STATUSES } from '../types/types';
+import postsDomain from '../domain/posts.domain';
+import { postQueryRepo } from '../repositries/posts.repositry';
+
+const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
-    const result = await postsDomain.getAll();
+    const result = await postQueryRepo.find();
     res.send(result);
 });
 
 router.get('/:id/', async (req: Request, res: Response) => {
-    const result = await postsDomain.getOne(req.params.id);
+    const result = await postQueryRepo.findById(req.params.id);
     if (!result) {
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;

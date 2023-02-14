@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import BlogsRepo from '../repositries/blogs.repositry'
+import { blogsQueryRepo } from '../repositries/blogs.repositry'
 import { VALIDATION_ERROR_MSG } from '../types/types';
 
 export const createPostsBody = [
@@ -27,7 +27,7 @@ export const createPostsBody = [
         .trim()
         .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
         .custom(async (v, { req }) => {
-            const isExist = await BlogsRepo.findById(req.body.blogId);
+            const isExist = await blogsQueryRepo.findById(req.body.blogId);
             if (!isExist) throw new Error(VALIDATION_ERROR_MSG.BLOG_ID_NOT_FOUND);
             return true;
         }),

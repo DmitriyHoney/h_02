@@ -22,7 +22,8 @@ router.get('/:id/', async (req: Request, res: Response) => {
 });
 
 router.post('/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
-    const result = await blogsDomain.create(req.body);
+    const id = await blogsDomain.create(req.body);
+    const result = await blogsQueryRepo.findById(id);
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 

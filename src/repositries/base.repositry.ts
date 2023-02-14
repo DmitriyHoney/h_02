@@ -2,7 +2,7 @@ import { Document, WithId } from 'mongodb';
 import { collection } from '../db'
 
 interface GenericRepoCommandLayerFn<Payload> {
-    create: (payload: Payload) => Promise<Payload>
+    create: (payload: Payload) => Promise<string>
     update: (id: string, payload: Payload) => Promise<boolean>
     delete: (id: string) => Promise<boolean>
     _deleteAll: () => Promise<boolean>
@@ -12,7 +12,6 @@ interface GenericRepoQueryLayerFn<ItemType> {
     find: () => Promise<WithId<ItemType & Document>[]>
     findById: (id: string) => Promise<WithId<ItemType & Document> | null>
 }
-
 
 export function generateBaseCommandRepo<I, P, C>(collectionName: string, custom: C): GenericRepoCommandLayerFn<P> & C {
     return {
@@ -24,11 +23,7 @@ export function generateBaseCommandRepo<I, P, C>(collectionName: string, custom:
                 createdAt: curDate.toISOString(),
                 ...payload 
             });
-            return {
-                id: String(curDate.getTime()),
-                createdAt: curDate.toISOString(),
-                ...payload
-            };
+            return String(curDate.getTime())
         },
         update: async (id: string, payload: P) => {
             // @ts-ignore

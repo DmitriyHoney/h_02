@@ -7,8 +7,8 @@ import blogsDomain from '../domain/blogs.domain';
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
-    const result = await blogsQueryRepo.find();
+router.get('/', async (req: Request<{}, {}, {}, { searchNameTerm: string | null }>, res: Response) => {
+    const result = await blogsQueryRepo.find(req.query.searchNameTerm);
     res.send(result);
 });
 

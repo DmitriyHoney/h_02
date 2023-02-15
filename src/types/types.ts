@@ -24,6 +24,14 @@ export type ValidationErrors = {
     errorsMessages: Array<ValidationError>
 }
 
+export type PaginationSortingType<I> = {
+    pagesCount: number,
+    page: number,
+    pageSize: number,
+    totalCount: number,
+    items: Array<I>
+}
+
 export type BaseDbEntity = { id: string, createdAt: string };
 
 export type Blog = {

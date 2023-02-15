@@ -16,6 +16,7 @@ export const config = {
         incorrect3: 'YWRtaW46cXdlcnR5',
         incorrect4: '',
     },
+    blogsNames: [ 'Ivan', 'DiVan', 'JanClod Vandam', 'Test' ],
     validBody: {
         name: 'Post 1',
         description: 'Description post 1',
@@ -30,7 +31,7 @@ export const config = {
     } as Blog,
 };
 // @ts-ignore
-const reqWithAuthHeader = (app, method, url, token) => request(app)[method](url).set('Authorization', token);
+const reqWithAuthHeader = (app, method: string, url: string, token: string) => request(app)[method](url).set('Authorization', token);
 
 describe('/blogs', () => {
     const { 
@@ -246,6 +247,30 @@ describe('/blogs', () => {
                     { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'description' },
                 ]
             } as ValidationErrors );
+        });
+    });
+
+    describe('CHECK QUERY PARAMS SEARCH', () => {
+        test('create test blogs', async () => {
+            const createPromises: Array<Promise<any>> = [];
+            config.blogsNames.forEach((blogName) => {
+                const promise = reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
+                    .send({ ...validBody, name: blogName })
+                createPromises.push(promise);
+            });
+            await Promise.all(createPromises);
+        });
+
+        test('check queryParam searchNameTerm (not item this name)', async () => {
+            await request(config.app).get(`${url}?searchNameTerm=qwertyuiop`)
+                .expect(HTTP_STATUSES.OK_200, [])
+        });
+
+        test('check queryParam searchNameTerm (exist 3 item this name)', async () => {
+            const result = await request(config.app).get(`${url}?searchNameTerm=va`)
+                .expect(HTTP_STATUSES.OK_200);
+
+            expect(result.body.length).toEqual(3);
         });
     });
 });

@@ -1,5 +1,6 @@
 import { Document, WithId } from 'mongodb';
 import { collection } from '../db'
+import { PaginationSortingType } from '../types/types';
 
 interface GenericRepoCommandLayerFn<Payload> {
     create: (payload: Payload) => Promise<string>
@@ -9,7 +10,7 @@ interface GenericRepoCommandLayerFn<Payload> {
 }
 
 interface GenericRepoQueryLayerFn<ItemType> {
-    find: () => Promise<WithId<ItemType & Document>[]>
+    find: (pageNumber: string, pageSize: string) => Promise<WithId<PaginationSortingType<ItemType> & Document>[]>
     findById: (id: string) => Promise<WithId<ItemType & Document> | null>
 }
 
@@ -46,7 +47,26 @@ export function generateBaseCommandRepo<I, P, C>(collectionName: string, custom:
 // по умолчанию возвращается весь объект кроме _id
 export function generateBaseQueryRepo<I, C>(collectionName: string, custom: C): GenericRepoQueryLayerFn<I> & C {
     return {
-        find: () => collection<I>(collectionName).find({}, { projection: { _id: 0 } }).toArray(),
+        find: async (pageNumber: string = '1', pageSize: string = '10') => {
+            const totalCount = await collection(collectionName).countDocuments();
+            const skip = +pageSize * (+pageNumber - 1);
+            const items = await collection<PaginationSortingType<I>>(collectionName)
+                .aggregate([
+                    { $skip: skip },
+                    { $limit: +pageSize },
+                    { $project: { _id: 0 } }
+                ]).toArray()
+            const result: PaginationSortingType<WithId<PaginationSortingType<I> & Document>> = {
+                pagesCount: Math.ceil(totalCount / +pageSize),
+                page: +pageNumber,
+                pageSize: +pageSize,
+                totalCount,
+                // @ts-ignore
+                items,
+            };
+            // @ts-ignore
+            return new Promise((resolve) => resolve(result));
+        },
         // @ts-ignore
         findById: (id: string) => collection<I>(collectionName).findOne({ id }, { projection: { _id: 0 } }),
         ...custom

@@ -1,9 +1,20 @@
-import { generateBaseCommandRepo, generateBaseQueryRepo } from './base.repositry';
+import { CommandRepo, QueryRepo } from './base.repositry';
 import { PostModel, Post } from '../types/types';
 
-type PostsCommandRepoCustom = {}
-export const postCommandRepo = generateBaseCommandRepo<PostModel, Post, PostsCommandRepoCustom>('posts', {});
+class PostCommandRepo extends CommandRepo<PostModel, Post> {}
+export const postCommandRepo = new PostCommandRepo('posts');
 
-type PostsQueryRepoCustom = {}
-// Здесь делать map and types for returned query objects
-export const postQueryRepo = generateBaseQueryRepo<PostModel, PostsQueryRepoCustom>('posts', {});
+
+class PostQueryRepo extends QueryRepo<PostModel> {
+    async findByBlogId(
+        pageSize?: string, 
+        pageNumber?: string,
+        sortBy?: string,
+        sortDirection?: string,
+        // @ts-ignore
+        blogId: string,
+    ) {
+        return await super.find(pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
+    }
+}
+export const postQueryRepo = new PostQueryRepo('posts');

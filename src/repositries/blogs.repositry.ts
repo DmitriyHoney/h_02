@@ -1,23 +1,21 @@
-import { generateBaseCommandRepo, generateBaseQueryRepo } from './base.repositry';
-import { BlogModel, Blog } from '../types/types';
-import { Document, WithId } from 'mongodb';
-import { collection } from '../db'
+import { CommandRepo, QueryRepo } from './base.repositry';
+import { BlogModel, Blog, PaginationSortingType } from '../types/types';
+import { WithId, Document } from 'mongodb';
 
-type BlogsCommandRepoCustom = {}
-export const blogsCommandRepo =  generateBaseCommandRepo<BlogModel, Blog, BlogsCommandRepoCustom>('blogs', {});
+class BlogsCommandRepo extends CommandRepo<BlogModel, Blog> {}
+export const blogsCommandRepo =  new BlogsCommandRepo('blogs');
 
-type BlogsQueryRepoCustom = {
-    find: (searchNameTerm: string | null) => Promise<WithId<BlogModel & Document>[]>,
+class BlogsQueryRepo extends QueryRepo<BlogModel> {
+    async find(
+        pageSize?: string, 
+        pageNumber?: string,
+        sortBy?: string,
+        sortDirection?: string,
+        filters?: { searchNameTerm?: string },
+    ) {
+        const prepareFilters: any = {};
+        if (filters?.searchNameTerm) prepareFilters.name = { $regex: filters.searchNameTerm, $options: "i" };
+        return await super.find(pageSize, pageNumber, sortBy, sortDirection, prepareFilters);
+    }
 }
-// Здесь делать map and types for returned query objects
-export const blogsQueryRepo = generateBaseQueryRepo<BlogModel, BlogsQueryRepoCustom>('blogs', {
-    find: (searchNameTerm: string | null) => {
-        const queryFilter: any = {};
-        if (searchNameTerm) {
-            queryFilter.name = { $regex: searchNameTerm, $options: "i" }
-        }
-        return collection<BlogModel>('blogs')
-            .find(queryFilter, { projection: { _id: 0 } })
-            .toArray()
-    },
-});
+export const blogsQueryRepo = new BlogsQueryRepo('blogs');

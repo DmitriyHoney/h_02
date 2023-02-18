@@ -42,16 +42,19 @@ describe('/blogs', () => {
         const init = await initTestServer();
         config.app = init.app;
         config.server = init.server;
-
-        await request(config.app).delete(deleteUrl)
-            .expect(HTTP_STATUSES.NO_CONTENT_204, {})
     });
     afterAll(() => config.server?.close());
 
-    describe('INIT TEST AND CHECK CLEAN RESULT', () => {
+    describe('DELETE ALL DATA FROM TEST TEST DB AND CHECK CLEAN RESULT', () => {
+        test('should return 204', async () => {
+            await request(config.app).delete(deleteUrl)
+                .expect(HTTP_STATUSES.NO_CONTENT_204, {})
+        });
         test('should return 200 and empty array', async () => {
-            await request(config.app).get(url)
-                .expect(HTTP_STATUSES.OK_200, [])
+            const result = await request(config.app).get(url)
+                .expect(HTTP_STATUSES.OK_200)
+
+            expect(result.body.items.length).toBe(0);
         });
     })
 
@@ -138,8 +141,8 @@ describe('/blogs', () => {
                 .get(url)
                 .expect(HTTP_STATUSES.OK_200)
 
-            expect(resultAll.body.length).toEqual(1)
-            expect(resultAll.body[0].id).toEqual(item.body.id)
+            expect(resultAll.body.items.length).toEqual(1)
+            expect(resultAll.body.items[0].id).toEqual(item.body.id)
         });
         test('Check updated item', async () => {
             await reqWithAuthHeader(config.app, 'put', `${url}/${item.body.id}`, basicTokens.correct)
@@ -164,7 +167,7 @@ describe('/blogs', () => {
                 .get(url)
                 .expect(HTTP_STATUSES.OK_200)
 
-            expect(result.body).toEqual([])
+            expect(result.body.items).toEqual([])
         })
          
     });
@@ -262,15 +265,50 @@ describe('/blogs', () => {
         });
 
         test('check queryParam searchNameTerm (not item this name)', async () => {
-            await request(config.app).get(`${url}?searchNameTerm=qwertyuiop`)
-                .expect(HTTP_STATUSES.OK_200, [])
+            const result = await request(config.app).get(`${url}?searchNameTerm=qwertyuiop`)
+                .expect(HTTP_STATUSES.OK_200);
+
+            expect(result.body.items.length).toBe(0);
         });
 
         test('check queryParam searchNameTerm (exist 3 item this name)', async () => {
             const result = await request(config.app).get(`${url}?searchNameTerm=va`)
                 .expect(HTTP_STATUSES.OK_200);
 
-            expect(result.body.length).toEqual(3);
+            expect(result.body.items.length).toEqual(3);
+        });
+
+        test('check queryParam without searchNameTerm', async () => {
+            const result = await request(config.app).get(url)
+                .expect(HTTP_STATUSES.OK_200);
+
+            expect(result.body.items.length).toEqual(4);
+        });
+    });
+    
+    describe('CHECK QUERY PARAMS PAGINATION', () => {
+        test('check pageNumber=1; pageSize=100', async () => {
+            const result = await request(config.app).get(`${url}?pageNumber=1&pageSize=100`)
+                .expect(HTTP_STATUSES.OK_200);
+            expect(result.body.items.length).toEqual(4);
+        });
+
+        test('check pageNumber=1; pageSize=2', async () => {
+            const result = await request(config.app).get(`${url}?pageNumber=2&pageSize=2`)
+                .expect(HTTP_STATUSES.OK_200);
+            expect(result.body.items.length).toEqual(2);
+            expect(result.body.page).toBe(2);
+            expect(result.body.pageSize).toBe(2);
+            expect(result.body.totalCount).toBe(4);
+            expect(result.body.pagesCount).toBe(2);
+        });
+    });
+
+    describe('CHECK QUERY PARAMS SORTING', () => {
+        test('check sort by createdAt', async () => {
+            const result = await request(config.app).get(`${url}?sortBy=createdAt&sortDirection=asc`)
+                .expect(HTTP_STATUSES.OK_200);
+            expect(result.body.items[0].name).toBe(config.blogsNames[0]);
         });
     });
 });

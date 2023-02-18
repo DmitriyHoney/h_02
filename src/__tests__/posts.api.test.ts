@@ -58,8 +58,17 @@ describe('/posts', () => {
 
     describe('INIT TEST AND CHECK CLEAN RESULT', () => {
         test('should return 200 and empty array', async () => {
-            await request(config.app).get(url)
-                .expect(HTTP_STATUSES.OK_200, [])
+            const result = await request(config.app).get(url)
+                .expect(HTTP_STATUSES.OK_200)
+                
+                expect(result.body).toEqual({
+                    pagesCount: 0,
+                    page: 1,
+                    pageSize: 10,
+                    totalCount: 0,
+                    items: []
+                })
+                expect(result.body.items.length).toBe(0);
         });
     })
 
@@ -150,8 +159,8 @@ describe('/posts', () => {
                 .get(url)
                 .expect(HTTP_STATUSES.OK_200)
 
-            expect(resultAll.body.length).toEqual(1)
-            expect(resultAll.body[0].id).toEqual(item.body.id)
+            expect(resultAll.body.items.length).toEqual(1)
+            expect(resultAll.body.items[0].id).toEqual(item.body.id)
         });
         test('Check updated item', async () => {
             const updtRes = await reqWithAuthHeader(config.app, 'put', `${url}/${item.body.id}`, basicTokens.correct)
@@ -180,7 +189,7 @@ describe('/posts', () => {
                 .get(url)
                 .expect(HTTP_STATUSES.OK_200)
 
-            expect(result.body).toEqual([])
+            expect(result.body.items).toEqual([])
         })
          
     });

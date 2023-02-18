@@ -1,14 +1,26 @@
 import { Router, Request, Response } from 'express';
 import { createBlogsBody as validatorMiddleware } from '../middlewares/blogs.middleware';
+import { createPostsBodyWithoutBlogId as validatorMiddlewarePosts } from '../middlewares/posts.middleware';
 import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
 import { HTTP_STATUSES } from '../types/types';
 import { blogsQueryRepo } from '../repositries/blogs.repositry';
+import { postQueryRepo } from '../repositries/posts.repositry';
 import blogsDomain from '../domain/blogs.domain';
+import postsDomain from '../domain/posts.domain';
 
 const router = Router();
 
-router.get('/', async (req: Request<{}, {}, {}, { searchNameTerm: string | null }>, res: Response) => {
-    const result = await blogsQueryRepo.find(req.query.searchNameTerm);
+type GetAllBlogsQuery = {
+    searchNameTerm?: string,
+    pageSize?: string,
+    pageNumber?: string,
+    sortBy?: string,
+    sortDirection?: string
+}
+
+router.get('/', async (req: Request<{}, {}, {}, GetAllBlogsQuery>, res: Response) => {
+    const { pageSize, pageNumber, sortBy, sortDirection, searchNameTerm } = req.query;
+    const result = await blogsQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { searchNameTerm });
     res.send(result);
 });
 
@@ -19,6 +31,26 @@ router.get('/:id/', async (req: Request, res: Response) => {
         return;
     }
     res.status(HTTP_STATUSES.OK_200).send(result);
+});
+
+router.get('/:blogId/posts', async (req: Request, res: Response) => {
+    const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
+    // @ts-ignore
+    const result = await postQueryRepo.findByBlogId(pageSize, pageNumber, sortBy, sortDirection, req.params.blogId);
+    if (!result) {
+        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+        return;
+    }
+    res.status(HTTP_STATUSES.OK_200).send(result);
+});
+
+router.post('/:blogId/posts', authMiddleware, ...validatorMiddlewarePosts, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    const id = await postsDomain.create({
+        ...req.body,
+        blogId: req.params.blogId,
+    });
+    const result = await postQueryRepo.findById(id);
+    res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 
 router.post('/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {

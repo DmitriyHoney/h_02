@@ -7,8 +7,16 @@ import { postQueryRepo } from '../repositries/posts.repositry';
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
-    const result = await postQueryRepo.find();
+type GetAllPostsQuery = {
+    pageSize?: string,
+    pageNumber?: string,
+    sortBy?: string,
+    sortDirection?: string
+}
+
+router.get('/', async (req: Request<{}, {}, {}, GetAllPostsQuery>, res: Response) => {
+    const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
+    const result = await postQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, {});
     res.send(result);
 });
 

@@ -50,6 +50,10 @@ router.post('/:blogId/posts', authMiddleware, ...validatorMiddlewarePosts, valid
         blogId: req.params.blogId,
     });
     const result = await postQueryRepo.findById(id);
+    if (!result) {
+        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+        return;
+    }
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 

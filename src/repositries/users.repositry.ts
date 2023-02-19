@@ -13,11 +13,15 @@ class UsersQueryRepo extends QueryRepo<UserModel> {
         sortDirection?: string,
         filters?: { searchLoginTerm?: string, searchEmailTerm?: string },
     ) {
-        const prepareFilters: any = {
-            $or: []
+        const prepareFilters: any = {};
+        if (filters?.searchLoginTerm) {
+            if (!prepareFilters.$or) prepareFilters.$or = [];
+            prepareFilters.$or.push({ login: { $regex: filters.searchLoginTerm, $options: "i" } })
         };
-        if (filters?.searchLoginTerm) prepareFilters.$or.push({ login: { $regex: filters.searchLoginTerm, $options: "i" } });
-        if (filters?.searchEmailTerm) prepareFilters.$or.push({ email: { $regex: filters.searchEmailTerm, $options: "i" } });
+        if (filters?.searchEmailTerm) {
+            if (!prepareFilters.$or) prepareFilters.$or = [];
+            prepareFilters.$or.push({ email: { $regex: filters.searchEmailTerm, $options: "i" } });
+        }
         return await super.find(pageSize, pageNumber, sortBy, sortDirection, prepareFilters);
     }
     async findUserByEmail(email: string) {

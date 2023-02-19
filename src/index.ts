@@ -3,6 +3,8 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import blogsRoute from './routes/blogs.routes';
 import postsRoute from './routes/posts.routes';
+import usersRoute from './routes/users.routes';
+import authRoute from './routes/auth.routes';
 import testRoute from './routes/test.routes';
 import { connectDB } from './db'
 
@@ -17,6 +19,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get('/', (req, res) => res.send('Hello, world!'));
 app.use('/api/posts', postsRoute);
 app.use('/api/blogs', blogsRoute);
+app.use('/api/users', usersRoute);
+app.use('/api/auth', authRoute);
 app.use('/api/testing/all-data', testRoute);
 
 

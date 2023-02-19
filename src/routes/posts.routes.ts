@@ -1,20 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { createPostsBody as validatorMiddleware } from '../middlewares/posts.middleware';
 import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
-import { HTTP_STATUSES } from '../types/types';
+import { BaseGetQueryParams, HTTP_STATUSES } from '../types/types';
 import postsDomain from '../domain/posts.domain';
 import { postQueryRepo } from '../repositries/posts.repositry';
 
 const router = Router();
 
-type GetAllPostsQuery = {
-    pageSize?: string,
-    pageNumber?: string,
-    sortBy?: string,
-    sortDirection?: string
-}
-
-router.get('/', async (req: Request<{}, {}, {}, GetAllPostsQuery>, res: Response) => {
+router.get('/', async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
     const result = await postQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, {});
     res.send(result);

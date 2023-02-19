@@ -65,7 +65,7 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
     ) {
         const skip = +pageSize * (+pageNumber - 1);
         const payload: any = [
-            { $project: { _id: 0 } },
+            { $project: { _id: 0, password: 0 } },
             { 
                 $facet: {
                     items: [{ $skip: skip }, { $limit: +pageSize }],
@@ -88,6 +88,6 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
     }
     async findById(id: string) {
         // @ts-ignore
-        return await collection<I>(this.collectionName).findOne({ id }, { projection: { _id: 0 } })
+        return await collection<I>(this.collectionName).findOne({ id }, { projection: { _id: 0, password: 0 } })
     }
 }

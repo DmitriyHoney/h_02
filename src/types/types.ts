@@ -5,7 +5,12 @@ export const VALIDATION_ERROR_MSG = {
     IS_BOOLEAN: 'Field must be a boolean',
     IS_URL: 'Field must be an url',
     OUT_OF_RANGE: 'Field is out of range',
-    BLOG_ID_NOT_FOUND: 'Blog with blogId not found'
+    BLOG_ID_NOT_FOUND: 'Blog with blogId not found',
+    LOGIN_NOT_VALID_TEMPLATE: 'Not valid pattern login, must be ^[a-zA-Z0-9_-]*$',
+    EMAIL_NOT_VALID_TEMPLATE: 'Not valid pattern email, must be ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    EMAIL_OR_PASSWORD_NOT_VALID: 'Email or password not valid',
+    USER_THIS_EMAIL_EXIST: 'User this email already exist',
+    USER_THIS_LOGIN_EXIST: 'User this login already exist',
 };
 
 export const HTTP_STATUSES = {
@@ -49,5 +54,24 @@ export type Post = {
     blogName?: string,
 }
 
+export type User = {
+    login: string,
+    email: string,
+    password: string,
+}
+
+export type BaseGetQueryParams = {
+    pageSize?: string,
+    pageNumber?: string,
+    sortBy?: string,
+    sortDirection?: string
+}
+
+export type AuthBody = {
+    loginOrEmail: string,
+    password: string
+}
+
 export type BlogModel = BaseDbEntity & Blog;
 export type PostModel = BaseDbEntity & Post;
+export type UserModel = BaseDbEntity & User;

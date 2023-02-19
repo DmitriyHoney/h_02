@@ -3,6 +3,7 @@ import { initTestServer } from '../helpers/index'
 import { HTTP_STATUSES, VALIDATION_ERROR_MSG, Blog, ValidationErrors } from '../types/types';
 import { Express } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
+import { config as postConfig } from './posts.api.test';
 
 export const config = {
     app: null as Express | null,
@@ -309,6 +310,46 @@ describe('/blogs', () => {
             const result = await request(config.app).get(`${url}?sortBy=createdAt&sortDirection=asc`)
                 .expect(HTTP_STATUSES.OK_200);
             expect(result.body.items[0].name).toBe(config.blogsNames[0]);
+        });
+    });
+
+    describe('CHECK CREATE AND GET POSTS BY BLOG_ID', () => {
+        let blog1: any = null;
+        let blog2: any = null;
+        let post1ForBlog1: any = null;
+        let post2ForBlog1: any = null;
+        test('create two rows blogs', async () => {
+            blog1 = await reqWithAuthHeader(config.app, 'post', `${url}`, basicTokens.correct)
+                .send({ ...validBody, name: 'blog 1.1' })
+                .expect(HTTP_STATUSES.CREATED_201);
+
+            blog2 = await reqWithAuthHeader(config.app, 'post', `${url}`, basicTokens.correct)
+                .send({ ...validBody, name: 'blog 2.2' })
+                .expect(HTTP_STATUSES.CREATED_201);
+        });
+
+        test('create posts by new url /:blogId/posts', async () => {
+            const payload = { ...postConfig.validBody };
+            // @ts-ignore
+            delete payload.blogId;
+
+            post1ForBlog1 = await reqWithAuthHeader(config.app, 'post', `${url}/${blog1.body.id}/posts`, basicTokens.correct)
+                .send({ ...payload, blogName: 'for blog 1.1' })
+                .expect(HTTP_STATUSES.CREATED_201);
+
+            post2ForBlog1 = await reqWithAuthHeader(config.app, 'post', `${url}/${blog1.body.id}/posts`, basicTokens.correct)
+                .send({ ...payload, blogName: 'for blog 1.1 part 2' })
+                .expect(HTTP_STATUSES.CREATED_201);
+        });
+
+        test('get posts by new url /:blogId/posts', async () => {
+            const resFull = await reqWithAuthHeader(config.app, 'get', `${url}/${blog1.body.id}/posts`, basicTokens.correct)
+                .expect(HTTP_STATUSES.OK_200);
+
+            expect(resFull.body.items.length).toBe(2);
+
+            post2ForBlog1 = await reqWithAuthHeader(config.app, 'get', `${url}/${blog2.body.id}/posts`, basicTokens.correct)
+                .expect(HTTP_STATUSES.NOT_FOUND_404);
         });
     });
 });

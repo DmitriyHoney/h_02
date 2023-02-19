@@ -5,7 +5,7 @@ import { IncomingMessage, Server, ServerResponse } from 'http';
 import { initTestServer } from '../helpers';
 import { config as blogConfig } from './blogs.api.test';
 
-const config = {
+export const config = {
     app: null as Express | null,
     server: null as Server<typeof IncomingMessage, typeof ServerResponse> | null,
     url: '/api/posts',

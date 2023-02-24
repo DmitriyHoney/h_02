@@ -29,11 +29,13 @@ router.get('/:id/', async (req: Request, res: Response) => {
 
 router.get('/:postId/comments', async (req: Request<{ postId?: string}, {}, {}, BaseGetQueryParams>, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
+
+    const isPostExist = await postQueryRepo.findById(req.params.postId || 'undefined');
+    if (!isPostExist) return res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+    
     const result = await commentsQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { postId: req.params.postId });
-    if (!result) {
-        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
-        return;
-    }
+    if (!result) return res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+
     res.status(HTTP_STATUSES.OK_200).send(result);
 });
 
@@ -46,6 +48,7 @@ router.post('/',  authMiddleware, ...validatorMiddleware, validatorsErrorsMiddle
 router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const post = await postQueryRepo.findById(req.params.postId);
     if (!post) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
+    
     const createdId = await commentsDomain.create({ 
         ...req.body, 
         postId: req.params.postId,

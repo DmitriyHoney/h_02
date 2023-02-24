@@ -25,6 +25,7 @@ router.get('/:id/', async (req: Request, res: Response) => {
 
 router.put('/:id/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
+    if (isCommentOwnUser === HTTP_STATUSES.NOT_FOUND_404) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
     if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();
 
     const isUpdated = await commentsDomain.update(req.params.id, req.body);
@@ -35,6 +36,7 @@ router.put('/:id/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsM
 
 router.delete('/:id/', authMiddlewareJWT, async (req: Request, res: Response) => {
     const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
+    if (isCommentOwnUser === HTTP_STATUSES.NOT_FOUND_404) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
     if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();
 
     const isDeleted = await commentsDomain.deleteOne(req.params.id);
@@ -45,6 +47,7 @@ router.delete('/:id/', authMiddlewareJWT, async (req: Request, res: Response) =>
 
 async function checkCommentOwnUser(commentId: string, userId: string | undefined) {
     const row = await commentsQueryRepo.findById(commentId);
+    if (!row) return HTTP_STATUSES.NOT_FOUND_404;
     return row?.commentatorInfo?.userId === userId;
 }
 

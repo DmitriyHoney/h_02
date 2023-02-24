@@ -14,27 +14,6 @@ router.get('/', async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Respon
     res.send(result);
 });
 
-router.get('/:id/', async (req: Request, res: Response) => {
-    const result = await commentsQueryRepo.findById(req.params.id);
-    if (!result) {
-        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
-        return;
-    }
-    res.status(HTTP_STATUSES.OK_200).send(result);
-});
-
-router.post('/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
-    const createdId = await commentsDomain.create({ 
-        ...req.body, 
-        commentatorInfo: {
-            userId: req.context.user?.id,
-            userLogin: req.context.user?.login
-        }
-    });
-    const result = await commentsQueryRepo.findById(createdId);
-    res.status(HTTP_STATUSES.CREATED_201).send(result)
-});
-
 router.put('/:id/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
     if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();
@@ -48,7 +27,7 @@ router.put('/:id/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsM
 router.delete('/:id/', authMiddlewareJWT, async (req: Request, res: Response) => {
     const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
     if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();
-    
+
     const isDeleted = await commentsDomain.deleteOne(req.params.id);
     return isDeleted
         ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()

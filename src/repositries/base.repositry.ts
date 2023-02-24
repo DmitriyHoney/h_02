@@ -62,10 +62,12 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
         sortBy: string = 'createdAt',
         sortDirection: string = 'desc',
         filters: object = {},
+        excludeFields: object = {},
     ) {
         const skip = +pageSize * (+pageNumber - 1);
+
         const payload: any = [
-            { $project: { _id: 0, password: 0 } },
+            { $project: { _id: 0, password: 0, ...excludeFields } },
             { 
                 $facet: {
                     items: [{ $skip: skip }, { $limit: +pageSize }],

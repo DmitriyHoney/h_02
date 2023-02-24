@@ -4,5 +4,17 @@ import { CommentModel, Comment } from '../types/types';
 class CommentsCommandRepo extends CommandRepo<CommentModel, Comment> {}
 export const commentsCommandRepo =  new CommentsCommandRepo('comments');
 
-class CommentsQueryRepo extends QueryRepo<CommentModel> {}
+class CommentsQueryRepo extends QueryRepo<CommentModel> {
+    async find(
+        pageSize?: string, 
+        pageNumber?: string,
+        sortBy?: string,
+        sortDirection?: string,
+        filters?: { postId?: string },
+    ) {
+        const prepareFilters: any = {};
+        if (filters?.postId) prepareFilters.postId = filters.postId;
+        return await super.find(pageSize, pageNumber, sortBy, sortDirection, prepareFilters);
+    }
+}
 export const commentsQueryRepo = new CommentsQueryRepo('comments');

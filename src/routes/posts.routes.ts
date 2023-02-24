@@ -1,10 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { createPostsBody as validatorMiddleware } from '../middlewares/posts.middleware';
+import { createCommentsBody } from '../middlewares/comments.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
 import { BaseGetQueryParams, HTTP_STATUSES } from '../types/types';
 import postsDomain from '../domain/posts.domain';
 import { postQueryRepo } from '../repositries/posts.repositry';
-import { authMiddleware } from '../middlewares/auth.middleware';
+import { authMiddleware, authMiddlewareJWT } from '../middlewares/auth.middleware';
+import { commentsQueryRepo } from '../repositries/comments.repositry';
+import commentsDomain from '../domain/comments.domain';
 
 const router = Router();
 
@@ -23,9 +26,35 @@ router.get('/:id/', async (req: Request, res: Response) => {
     res.status(HTTP_STATUSES.OK_200).send(result);
 });
 
+
+router.get('/:postId/comments', async (req: Request<{ postId?: string}, {}, {}, BaseGetQueryParams>, res: Response) => {
+    const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
+    const result = await commentsQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { postId: req.params.postId });
+    if (!result) {
+        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+        return;
+    }
+    res.status(HTTP_STATUSES.OK_200).send(result);
+});
+
 router.post('/',  authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const id = await postsDomain.create(req.body);
     const result = await postQueryRepo.findById(id);
+    res.status(HTTP_STATUSES.CREATED_201).send(result);
+});
+
+router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    const post = await postQueryRepo.findById(req.params.postId);
+    if (!post) res.status(HTTP_STATUSES.NOT_FOUND_404).send();
+    const createdId = await commentsDomain.create({ 
+        ...req.body, 
+        postId: req.params.postId,
+        commentatorInfo: {
+            userId: req.context.user?.id,
+            userLogin: req.context.user?.login
+        }
+    });
+    const result = await commentsQueryRepo.findById(createdId);
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 

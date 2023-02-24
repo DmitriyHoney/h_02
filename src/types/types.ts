@@ -80,6 +80,7 @@ export type CommentatorInfo = {
 
 export type Comment = {
     content: string,
+    postId: string,
     commentatorInfo?: CommentatorInfo,
 }
 

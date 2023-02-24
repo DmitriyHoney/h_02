@@ -14,6 +14,15 @@ router.get('/', async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Respon
     res.send(result);
 });
 
+router.get('/:id/', async (req: Request, res: Response) => {
+    const result = await commentsQueryRepo.findById(req.params.id);
+    if (!result) {
+        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+        return;
+    }
+    res.status(HTTP_STATUSES.OK_200).send(result);
+});
+
 router.put('/:id/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
     if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();

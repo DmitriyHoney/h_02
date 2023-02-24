@@ -45,7 +45,7 @@ router.post('/',  authMiddleware, ...validatorMiddleware, validatorsErrorsMiddle
 
 router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const post = await postQueryRepo.findById(req.params.postId);
-    if (!post) res.status(HTTP_STATUSES.NOT_FOUND_404).send();
+    if (!post) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
     const createdId = await commentsDomain.create({ 
         ...req.body, 
         postId: req.params.postId,

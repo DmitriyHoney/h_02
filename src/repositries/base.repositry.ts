@@ -62,6 +62,7 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
         sortBy: string = 'createdAt',
         sortDirection: string = 'desc',
         filters: object = {},
+
         excludeFields: object = {},
     ) {
         const skip = +pageSize * (+pageNumber - 1);
@@ -88,8 +89,8 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
         };
         return new Promise((resolve: (value: ReturnedQueryGetAll<I>) => void) => resolve(result));
     }
-    async findById(id: string) {
+    async findById(id: string, excludeFields: object = {}) {
         // @ts-ignore
-        return await collection<I>(this.collectionName).findOne({ id }, { projection: { _id: 0, password: 0 } })
+        return await collection<I>(this.collectionName).findOne({ id }, { projection: { _id: 0, password: 0, ...excludeFields } })
     }
 }

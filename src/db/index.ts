@@ -1,17 +1,16 @@
-import { MongoClient, Document, FindCursor, ObjectId } from 'mongodb';
+import { MongoClient, Document } from 'mongodb';
+import { settings } from '../settings';
 
-const url = process.env.DB_URL || 'mongodb://localhost:27017';
+const url = settings.DB_URL;
 const client = new MongoClient(url);
 
 let dbName: string;
 
 export const connectDB = async (isForTest: boolean = false) => {
-    dbName = isForTest 
-        ? process.env.DB_NAME_TEST || 'test_db'
-        : process.env.DB_NAME || 'prod_db';
+    dbName = isForTest ? settings.DB_NAME_TEST : settings.DB_NAME;
     try {
         await client.connect();
-        console.log(`Connected successfully to server === ${dbName}`)
+        console.log(`Connected successfully - (DATA BASE NAME: ${dbName})`)
     } catch (e) {
         console.error(e);
     }

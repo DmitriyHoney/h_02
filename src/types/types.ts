@@ -19,6 +19,7 @@ export const HTTP_STATUSES = {
     NO_CONTENT_204: 204,
     BAD_REQUEST_400: 400,
     NOT_AUTHORIZED_401: 401,
+    FORBIDDEN_403: 403,
     NOT_FOUND_404: 404,
     SERVER_ERROR_500: 500,
 };
@@ -72,6 +73,18 @@ export type AuthBody = {
     password: string
 }
 
+export type CommentatorInfo = {
+    userId: string,
+    userLogin: string,
+}
+
+export type Comment = {
+    content: string,
+    commentatorInfo?: CommentatorInfo,
+}
+
+
 export type BlogModel = BaseDbEntity & Blog;
 export type PostModel = BaseDbEntity & Post;
 export type UserModel = BaseDbEntity & User;
+export type CommentModel = BaseDbEntity & Comment;

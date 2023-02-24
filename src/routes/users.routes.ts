@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { createUsersBody as validatorMiddleware } from '../middlewares/users.middleware';
-import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
+import { validatorsErrorsMiddleware } from '../middlewares';
 import { BaseGetQueryParams, HTTP_STATUSES, VALIDATION_ERROR_MSG, ValidationErrors } from '../types/types';
 import { usersQueryRepo } from '../repositries/users.repositry';
 import usersDomain from '../domain/users.domain';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 

@@ -31,4 +31,15 @@ class UsersQueryRepo extends QueryRepo<UserModel> {
         return await collection<UserModel>(this.collectionName).findOne({ login }, { projection: { _id: 0 } })
     }
 }
+
+export const userMappersQuery = {
+    authMe(user: UserModel) {
+        return {
+            email: user.email,
+            login: user.login,
+            userId: user.id,
+        }
+    }
+}
+
 export const usersQueryRepo = new UsersQueryRepo('users');

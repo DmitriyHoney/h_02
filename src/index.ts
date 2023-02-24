@@ -5,12 +5,12 @@ import blogsRoute from './routes/blogs.routes';
 import postsRoute from './routes/posts.routes';
 import usersRoute from './routes/users.routes';
 import authRoute from './routes/auth.routes';
+import commentsRoute from './routes/comments.routes';
 import testRoute from './routes/test.routes';
 import { connectDB } from './db'
+import { settings } from './settings';
+const { PORT, PORT_TEST } = settings;
 
-
-const PORT = process.env.PORT || 3000;
-const PORT_TEST = process.env.PORT_TEST || 3001;
 export const app = express();
 
 app.use(bodyParser.json());
@@ -21,6 +21,7 @@ app.use('/api/posts', postsRoute);
 app.use('/api/blogs', blogsRoute);
 app.use('/api/users', usersRoute);
 app.use('/api/auth', authRoute);
+app.use('/api/comments', commentsRoute);
 app.use('/api/testing/all-data', testRoute);
 
 

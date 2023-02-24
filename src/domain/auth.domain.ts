@@ -13,6 +13,7 @@ export default {
         const isExistUser = await findMethod(loginOrEmail);
         if (!isExistUser) throw new Error(VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID);
 
-        return await comparePasswords(password, isExistUser.password);
+        const isPasswordValid = await comparePasswords(password, isExistUser.password);
+        return isPasswordValid ? isExistUser : false;
     },
 };

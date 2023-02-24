@@ -1,12 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { createBlogsBody as validatorMiddleware } from '../middlewares/blogs.middleware';
 import { createPostsBodyWithoutBlogId as validatorMiddlewarePosts } from '../middlewares/posts.middleware';
-import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
+import { validatorsErrorsMiddleware } from '../middlewares';
 import { BaseGetQueryParams, HTTP_STATUSES } from '../types/types';
 import { blogsQueryRepo } from '../repositries/blogs.repositry';
 import { postQueryRepo } from '../repositries/posts.repositry';
 import blogsDomain from '../domain/blogs.domain';
 import postsDomain from '../domain/posts.domain';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 

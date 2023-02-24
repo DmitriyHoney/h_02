@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { createPostsBody as validatorMiddleware } from '../middlewares/posts.middleware';
-import { authMiddleware, validatorsErrorsMiddleware } from '../middlewares';
+import { validatorsErrorsMiddleware } from '../middlewares';
 import { BaseGetQueryParams, HTTP_STATUSES } from '../types/types';
 import postsDomain from '../domain/posts.domain';
 import { postQueryRepo } from '../repositries/posts.repositry';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 

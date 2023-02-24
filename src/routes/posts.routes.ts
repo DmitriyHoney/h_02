@@ -55,7 +55,7 @@ router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, vali
         }
     });
     const result = await commentsQueryRepo.findById(createdId);
-    res.status(HTTP_STATUSES.CREATED_201).send();
+    res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 
 router.put('/:id/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {

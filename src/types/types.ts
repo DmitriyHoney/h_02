@@ -59,6 +59,11 @@ export type User = {
     login: string,
     email: string,
     password: string,
+    confirmedInfo?: {
+        isConfirmedEmail: boolean,
+        code: string,
+        codeExpired: string
+    }
 }
 
 export type BaseGetQueryParams = {

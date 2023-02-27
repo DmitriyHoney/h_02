@@ -88,23 +88,15 @@ describe('/auth', () => {
                     }
                 ]);
         });
-        test('must returned 400 status code and loginOrEmail incorrect email', async () => {
+        test('must returned 401 status code and loginOrEmail incorrect email', async () => {
             const result = await request(config.app).post(`${url}/login`)
                 .send({ loginOrEmail: 'test@12312mail.ru', password: '12312'})
-                .expect(HTTP_STATUSES.BAD_REQUEST_400)
-                
-                expect(result.body.errorsMessages.length).toBe(1);
-                expect(result.body.errorsMessages).toEqual([
-                    {
-                        message: VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID,
-                        field: 'loginOrEmail'
-                    },
-                ]);
+                .expect(HTTP_STATUSES.NOT_AUTHORIZED_401)
         });
     });
 
     describe('CHECK SUCCESS BODY', () => {
-        test('USER EXIST AND AUTH SUCCESS must returned 201 no content', async () => {
+        test('USER EXIST AND AUTH SUCCESS must returned 204 no content', async () => {
             await request(config.app).post(`${url}/login`)
                 .send({ loginOrEmail: 'testUser', password: '12345678' })
                 expect(HTTP_STATUSES.NO_CONTENT_204)

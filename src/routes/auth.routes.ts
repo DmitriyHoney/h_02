@@ -26,7 +26,7 @@ router.post('/registration', ...authRegistration, validatorsErrorsMiddleware, as
         });
 
         const info = await emailManager.sendRegCodeConfirm(req.body.email, confirmedCode);
-        res.status(200).send();
+        res.status(204).send();
     } catch (e) {
         const userExistErrors = [VALIDATION_ERROR_MSG.USER_THIS_EMAIL_EXIST, VALIDATION_ERROR_MSG.USER_THIS_LOGIN_EXIST];
         const errMsg = (e as Error).message;
@@ -78,7 +78,7 @@ router.post('/registration-email-resending', ...authRegistrationResend, validato
         });
 
         const info = await emailManager.sendRegCodeConfirm(req.body.email, confirmedCode);
-        res.status(200).send();
+        res.status(204).send();
     } catch (e) {
         res.status(HTTP_STATUSES.BAD_REQUEST_400).send();
     }

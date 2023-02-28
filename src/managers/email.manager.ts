@@ -1,8 +1,8 @@
 import { emailAdapter } from "../adapters/email.adapter";
 
 export const emailManager = {
-    sendRegCodeConfirm(email: string, code: string) {
-        emailAdapter.sendMail(
+    async sendRegCodeConfirm(email: string, code: string) {
+        await emailAdapter.sendMail(
             email, 
             'Подтверждение регистрации',
             'Подтвердите адрес электронной почты, если это не вы просто проигнорируйте данное сообщение',

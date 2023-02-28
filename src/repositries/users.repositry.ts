@@ -22,13 +22,19 @@ class UsersQueryRepo extends QueryRepo<UserModel> {
             if (!prepareFilters.$or) prepareFilters.$or = [];
             prepareFilters.$or.push({ email: { $regex: filters.searchEmailTerm, $options: "i" } });
         }
-        return await super.find(pageSize, pageNumber, sortBy, sortDirection, prepareFilters);
+        return await super.find(pageSize, pageNumber, sortBy, sortDirection, prepareFilters, { confirmedInfo: 0 });
     }
     async findUserByEmail(email: string) {
         return await collection<UserModel>(this.collectionName).findOne({ email }, { projection: { _id: 0 } })
     }
     async findUserByLogin(login: string) {
         return await collection<UserModel>(this.collectionName).findOne({ login }, { projection: { _id: 0 } })
+    }
+    async findNoActUserByConfirmedCode(code: string) {
+        return await collection<UserModel>(this.collectionName).findOne({ 'confirmedInfo.code': code, 'confirmedInfo.isConfirmedEmail': false }, { projection: { _id: 0 } })
+    }
+    async findById(id: string) {
+        return await super.findById(id, { confirmedInfo: 0 });
     }
 }
 

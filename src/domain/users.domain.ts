@@ -17,7 +17,7 @@ export default {
             throw new Error((e as Error).message);
         }
     },
-    // update: async (id: string, body: User) => await usersCommandRepo.update(id, body),
+    update: async (id: string, body: User) => await usersCommandRepo.update(id, body),
     deleteOne: async (id: string) => await usersCommandRepo.delete(id),
-    deleteAll: async () => await usersCommandRepo._deleteAll()
+    deleteAll: async () => await usersCommandRepo._deleteAll(),
 };

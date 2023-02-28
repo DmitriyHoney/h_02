@@ -1,6 +1,6 @@
 import { comparePasswords, isEmail, isLogin } from '../helpers';
 import { usersQueryRepo } from '../repositries/users.repositry';
-import { AuthBody, Blog, VALIDATION_ERROR_MSG } from '../types/types';
+import { AuthBody, Blog, User, VALIDATION_ERROR_MSG } from '../types/types';
 
 export default {
     login: async (body: AuthBody) => {
@@ -16,4 +16,13 @@ export default {
         const isPasswordValid = await comparePasswords(password, isExistUser.password);
         return isPasswordValid ? isExistUser : false;
     },
+    isCodeConfirmationValid: (code: string, user: User) => {
+        // @ts-ignore
+        const expiredDate = new Date(user.confirmedInfo?.codeExpired);
+        const curDate = new Date();
+
+        const isCodesEqual = code === user.confirmedInfo?.code;
+        const isDateNotExpired = curDate <= expiredDate;
+        return isCodesEqual || isDateNotExpired;
+    }
 };

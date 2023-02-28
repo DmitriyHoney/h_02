@@ -45,12 +45,14 @@ router.post('/registration', ...authRegistration, validatorsErrorsMiddleware, as
 });
 
 router.post('/registration-confirmation', ...authRegistrationConfirm, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
-    const user = await usersQueryRepo.findNoActUserByConfirmedCode(req.body.code);
-    if (!user) return res.status(400).send();
-    const isCodeValid = authDomain.isCodeConfirmationValid(req.body.code, user);
     const errorsCodeAlreadyActivated: ValidationErrors = {
         errorsMessages: [{ message: 'Code already activated', field: 'code' }],
     };
+    
+    const user = await usersQueryRepo.findNoActUserByConfirmedCode(req.body.code);
+    if (!user) return res.status(400).send(errorsCodeAlreadyActivated);
+    const isCodeValid = authDomain.isCodeConfirmationValid(req.body.code, user);
+    
     if (user.confirmedInfo?.isConfirmedEmail) return res.status(400).send(errorsCodeAlreadyActivated);
     
     const errorsCodeNotValid: ValidationErrors = {

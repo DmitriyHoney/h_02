@@ -18,7 +18,8 @@ export const authBody = [
     .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
     .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()
     .trim()
-    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail(),
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
+    .isLength({ min: 6, max: 20 }).withMessage(VALIDATION_ERROR_MSG.OUT_OF_RANGE),
 ];
 
 export const authRegistration = [
@@ -33,7 +34,7 @@ export const authRegistration = [
     .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()
     .trim()
     .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
-    .isLength({ min: 3, max: 20 }).withMessage(VALIDATION_ERROR_MSG.OUT_OF_RANGE),
+    .isLength({ min: 6, max: 20 }).withMessage(VALIDATION_ERROR_MSG.OUT_OF_RANGE),
   body('email')
     .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
     .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()

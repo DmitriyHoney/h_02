@@ -48,7 +48,15 @@ router.post('/registration-confirmation', ...authRegistrationConfirm, validators
     const user = await usersQueryRepo.findNoActUserByConfirmedCode(req.body.code);
     if (!user) return res.status(400).send();
     const isCodeValid = authDomain.isCodeConfirmationValid(req.body.code, user);
-    if (!isCodeValid) return res.status(400).send();
+    const errorsCodeAlreadyActivated: ValidationErrors = {
+        errorsMessages: [{ message: 'Code already activated', field: 'code' }],
+    };
+    if (user.confirmedInfo?.isConfirmedEmail) return res.status(400).send(errorsCodeAlreadyActivated);
+    
+    const errorsCodeNotValid: ValidationErrors = {
+        errorsMessages: [{ message: 'Code not valid', field: 'code' }],
+    };
+    if (!isCodeValid) return res.status(400).send(errorsCodeNotValid);
     const isWasUpdated = await usersDomain.update(user.id, { 
         ...user, 
         confirmedInfo: { 
@@ -64,8 +72,13 @@ router.post('/registration-email-resending', ...authRegistrationResend, validato
     const expiredDate = new Date();
     expiredDate.setHours(expiredDate.getHours() + 1);
     const user = await usersQueryRepo.findUserByEmail(req.body.email);
-    if (!user) return res.status(404).send();
-    if (user.confirmedInfo?.isConfirmedEmail) return res.status(400).send();
+    if (!user) return res.status(400).send({
+        errorsMessages: [{ message: 'User this email not found', field: 'email' }],
+    });
+    const errorsEmailAlreadyConfirmed: ValidationErrors = {
+        errorsMessages: [{ message: 'Email already confirmed', field: 'email' }],
+    };
+    if (user.confirmedInfo?.isConfirmedEmail) return res.status(400).send(errorsEmailAlreadyConfirmed);
     try {
         const confirmedCode = generateUUID();
         await usersDomain.update(user.id, {

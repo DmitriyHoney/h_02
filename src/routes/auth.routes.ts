@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { authMiddlewareJWT, authBody as validatorMiddleware, authRegistration, authRegistrationConfirm } from '../middlewares/auth.middleware';
+import { authMiddlewareJWT, authBody as validatorMiddleware, authRegistration, authRegistrationConfirm, authRegistrationResend } from '../middlewares/auth.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
-import { HTTP_STATUSES, VALIDATION_ERROR_MSG } from '../types/types';
+import { HTTP_STATUSES, ValidationErrors, VALIDATION_ERROR_MSG } from '../types/types';
 import authDomain from '../domain/auth.domain';
 import { jwtService } from '../helpers/jwt-service';
 import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry';
@@ -16,7 +16,7 @@ router.post('/registration', ...authRegistration, validatorsErrorsMiddleware, as
     expiredDate.setHours(expiredDate.getHours() + 1);
     try {
         const confirmedCode = generateUUID();
-        usersDomain.create({
+        await usersDomain.create({
             ...req.body,
             confirmedInfo: {
                 code: confirmedCode,
@@ -25,10 +25,22 @@ router.post('/registration', ...authRegistration, validatorsErrorsMiddleware, as
             }
         });
 
-        const info = await emailManager.sendRegCodeConfirm(req.body.email, generateUUID());
+        const info = await emailManager.sendRegCodeConfirm(req.body.email, confirmedCode);
         res.status(200).send();
     } catch (e) {
-        console.error(222, e);
+        const userExistErrors = [VALIDATION_ERROR_MSG.USER_THIS_EMAIL_EXIST, VALIDATION_ERROR_MSG.USER_THIS_LOGIN_EXIST];
+        const errMsg = (e as Error).message;
+        if (userExistErrors.includes(errMsg)) {
+            const errorField = errMsg.indexOf('login') >= 0 ? 'login' : 'email';
+            const resultErrors: ValidationErrors = {
+                errorsMessages: [
+                    { field: errorField, message: errMsg }
+                ]
+            }
+            res.status(HTTP_STATUSES.BAD_REQUEST_400).send(resultErrors);
+        } else {
+            res.status(HTTP_STATUSES.BAD_REQUEST_400).send(errMsg);
+        }
     }
 });
 
@@ -46,6 +58,30 @@ router.post('/registration-confirmation', ...authRegistrationConfirm, validators
         }
     });
     return isWasUpdated ? res.status(204).send() : res.status(400).send();
+});
+
+router.post('/registration-email-resending', ...authRegistrationResend, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    const expiredDate = new Date();
+    expiredDate.setHours(expiredDate.getHours() + 1);
+    const user = await usersQueryRepo.findUserByEmail(req.body.email);
+    if (!user) return res.status(404).send();
+    if (user.confirmedInfo?.isConfirmedEmail) return res.status(400).send();
+    try {
+        const confirmedCode = generateUUID();
+        await usersDomain.update(user.id, {
+            ...user,
+            confirmedInfo: {
+                code: confirmedCode,
+                codeExpired: expiredDate.toISOString(),
+                isConfirmedEmail: false,
+            }
+        });
+
+        const info = await emailManager.sendRegCodeConfirm(req.body.email, confirmedCode);
+        res.status(200).send();
+    } catch (e) {
+        res.status(HTTP_STATUSES.BAD_REQUEST_400).send();
+    }
 });
 
 router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {

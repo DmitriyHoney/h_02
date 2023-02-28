@@ -47,6 +47,15 @@ export const authRegistrationConfirm = [
     .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail(),
 ];
 
+export const authRegistrationResend = [
+  body('email')
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
+    .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()
+    .trim()
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail(),
+];
+
+
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers?.authorization) return res.status(401).send('Not authorized');
   const [prefix, authInfo] = req.headers.authorization?.split(' ');

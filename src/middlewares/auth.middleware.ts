@@ -3,6 +3,7 @@ import { VALIDATION_ERROR_MSG } from '../types/types';
 import { Request, Response, NextFunction } from 'express';
 import { jwtService } from '../helpers/jwt-service';
 import { usersQueryRepo } from '../repositries/users.repositry';
+import { isEmail } from '../helpers';
 
 const users = {
   admin: 'qwerty',
@@ -39,7 +40,11 @@ export const authRegistration = [
     .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
     .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()
     .trim()
-    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail(),
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
+    .custom((value) => {
+      if (!isEmail(value)) throw new Error(VALIDATION_ERROR_MSG.EMAIL_NOT_VALID_TEMPLATE);
+      return true;
+    }),
 ];
 
 export const authRegistrationConfirm = [
@@ -55,7 +60,11 @@ export const authRegistrationResend = [
     .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
     .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()
     .trim()
-    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail(),
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
+    .custom((value) => {
+      if (!isEmail(value)) throw new Error(VALIDATION_ERROR_MSG.EMAIL_NOT_VALID_TEMPLATE);
+      return true;
+    }),
 ];
 
 

@@ -89,7 +89,13 @@ export type Comment = {
     commentatorInfo?: CommentatorInfo,
 }
 
+export type RefreshTokens = {
+    token: string,
+    wasUsed: boolean,
+}
 
+
+export type RefreshTokensModel = BaseDbEntity & RefreshTokens;
 export type BlogModel = BaseDbEntity & Blog;
 export type PostModel = BaseDbEntity & Post;
 export type UserModel = BaseDbEntity & User;

@@ -67,7 +67,6 @@ export const authRegistrationResend = [
     }),
 ];
 
-
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers?.authorization) return res.status(401).send('Not authorized');
   const [prefix, authInfo] = req.headers.authorization?.split(' ');

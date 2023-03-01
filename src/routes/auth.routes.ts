@@ -8,6 +8,8 @@ import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry
 import { emailManager } from '../managers/email.manager';
 import { generateExpiredDate, generateUUID } from '../helpers';
 import usersDomain from '../domain/users.domain';
+import refreshTokensDomain from '../domain/refresh-tokens.domain';
+import { refreshTokensQueryRepo } from '../repositries/refresh-tokens.repositry';
 
 const router = Router();
 
@@ -87,13 +89,40 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
             res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
             return;
         }
-        const accessToken = jwtService.createJWT(isUserSuccessAuth);
+        const accessToken = jwtService.createJWT(isUserSuccessAuth, '30s');
+        const refreshToken = jwtService.createJWT(isUserSuccessAuth, '60s');
+        await refreshTokensDomain.create({ token: refreshToken, wasUsed: false });
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
         res.status(HTTP_STATUSES.OK_200).send({ accessToken });
     } catch(e) {
         if ((e as Error).message === VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID) {
             res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
         } else res.status(HTTP_STATUSES.BAD_REQUEST_400).send();
     }
+});
+
+router.post('/refresh-token', async (req: Request, res: Response) => {
+    const refreshToken = req.cookies.refreshToken;
+    console.log('refreshToken', req.cookies.refreshToken);
+
+    const isJwtNotExpired = jwtService.getUserIdByToken(refreshToken);
+    if (!isJwtNotExpired) return res.status(401).send();
+
+    const tokenItem = await refreshTokensQueryRepo.findByToken(refreshToken);
+    if (!tokenItem || tokenItem.wasUsed) return res.status(401).send();
+
+    // @ts-ignore
+    const user = await usersQueryRepo.findById(isJwtNotExpired);
+    if (!user) return res.status(401).send();
+
+    await refreshTokensDomain.update(tokenItem.id, { ...tokenItem, wasUsed: true });
+
+    const newAccessToken = jwtService.createJWT(user, '30s');
+    const newRefreshToken = jwtService.createJWT(user, '60s');
+    await refreshTokensDomain.create({ token: newRefreshToken, wasUsed: false });
+
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true });
+    res.status(HTTP_STATUSES.OK_200).send({ accessToken: newAccessToken });
 });
 
 router.get('/me', authMiddlewareJWT, async (req: Request, res: Response) => {

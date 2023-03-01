@@ -6,66 +6,47 @@ import authDomain from '../domain/auth.domain';
 import { jwtService } from '../helpers/jwt-service';
 import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry';
 import { emailManager } from '../managers/email.manager';
-import { generateUUID } from '../helpers';
+import { generateExpiredDate, generateUUID } from '../helpers';
 import usersDomain from '../domain/users.domain';
 
 const router = Router();
 
 router.post('/registration', ...authRegistration, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
-    const expiredDate = new Date();
-    expiredDate.setHours(expiredDate.getHours() + 1);
+    const confirmedInfo = { 
+        code: generateUUID(), codeExpired: generateExpiredDate({ hours: 1 }).toISOString(), isConfirmedEmail: false 
+    };
     try {
-        const confirmedCode = generateUUID();
-        await usersDomain.create({
-            ...req.body,
-            confirmedInfo: {
-                code: confirmedCode,
-                codeExpired: expiredDate.toISOString(),
-                isConfirmedEmail: false,
-            }
-        });
-
-        const info = await emailManager.sendRegCodeConfirm(req.body.email, confirmedCode);
+        await usersDomain.create({ ...req.body, confirmedInfo });
+        await emailManager.sendRegCodeConfirm(req.body.email, confirmedInfo.code);
         res.status(204).send();
     } catch (e) {
-        const userExistErrors = [VALIDATION_ERROR_MSG.USER_THIS_EMAIL_EXIST, VALIDATION_ERROR_MSG.USER_THIS_LOGIN_EXIST];
+        const notUserThisEmailOrLogin = [VALIDATION_ERROR_MSG.USER_THIS_EMAIL_EXIST, VALIDATION_ERROR_MSG.USER_THIS_LOGIN_EXIST];
         const errMsg = (e as Error).message;
-        if (userExistErrors.includes(errMsg)) {
-            const errorField = errMsg.indexOf('login') >= 0 ? 'login' : 'email';
-            const resultErrors: ValidationErrors = {
-                errorsMessages: [
-                    { field: errorField, message: errMsg }
-                ]
-            }
-            res.status(HTTP_STATUSES.BAD_REQUEST_400).send(resultErrors);
-        } else {
-            res.status(HTTP_STATUSES.BAD_REQUEST_400).send(errMsg);
-        }
+        return notUserThisEmailOrLogin.includes(errMsg)
+            ? res.status(HTTP_STATUSES.BAD_REQUEST_400).send({
+                errorsMessages: [{ field: errMsg.indexOf('login') >= 0 ? 'login' : 'email', message: errMsg }]
+              })
+            : res.status(HTTP_STATUSES.BAD_REQUEST_400).send(errMsg);
     }
 });
 
 router.post('/registration-confirmation', ...authRegistrationConfirm, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
-    const errorsCodeAlreadyActivated: ValidationErrors = {
-        errorsMessages: [{ message: 'Code already activated', field: 'code' }],
+    const errorsCodeAlreadyActivatedOrExpired: ValidationErrors = {
+        errorsMessages: [{ message: 'Code already activated or expired', field: 'code' }],
     };
-    
-    const user = await usersQueryRepo.findNoActUserByConfirmedCode(req.body.code);
-    if (!user) return res.status(400).send(errorsCodeAlreadyActivated);
-    const isCodeValid = authDomain.isCodeConfirmationValid(req.body.code, user);
-    
-    if (user.confirmedInfo?.isConfirmedEmail) return res.status(400).send(errorsCodeAlreadyActivated);
-    
+
     const errorsCodeNotValid: ValidationErrors = {
         errorsMessages: [{ message: 'Code not valid', field: 'code' }],
     };
+    
+    const user = await usersQueryRepo.findNoActUserByConfirmedCode(req.body.code);
+    if (!user || user.confirmedInfo?.isConfirmedEmail) return res.status(400).send(errorsCodeAlreadyActivatedOrExpired);
+    
+    const isCodeValid = authDomain.isCodeConfirmationValid(req.body.code, user);
     if (!isCodeValid) return res.status(400).send(errorsCodeNotValid);
     const isWasUpdated = await usersDomain.update(user.id, { 
         ...user, 
-        confirmedInfo: { 
-            code: '',
-            codeExpired: '',
-            isConfirmedEmail: true,
-        }
+        confirmedInfo: { code: '', codeExpired: '', isConfirmedEmail: true }
     });
     return isWasUpdated ? res.status(204).send() : res.status(400).send();
 });

@@ -28,6 +28,16 @@ export const hashPassword = (password: string): Promise<string> => {
     });
 };
 
+type expiredObject = {
+    hours: number
+}
+
+export const generateExpiredDate = (obj: expiredObject) => {
+    const expiredDate = new Date();
+    expiredDate.setHours(expiredDate.getHours() + obj.hours);
+    return expiredDate;
+};
+
 export const generateUUID = () => {
     let d = new Date().getTime();
     let d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported

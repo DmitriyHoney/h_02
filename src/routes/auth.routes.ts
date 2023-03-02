@@ -89,10 +89,10 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
             res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
             return;
         }
-        const accessToken = jwtService.createJWT(isUserSuccessAuth, '30s');
-        const refreshToken = jwtService.createJWT(isUserSuccessAuth, '60s');
+        const accessToken = jwtService.createJWT(isUserSuccessAuth, '10s');
+        const refreshToken = jwtService.createJWT(isUserSuccessAuth, '20s');
         await refreshTokensDomain.create({ token: refreshToken, wasUsed: false });
-        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
+        res.cookie('refreshToken', refreshToken, { httpOnly: true })
         res.status(HTTP_STATUSES.OK_200).send({ accessToken });
     } catch(e) {
         if ((e as Error).message === VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID) {
@@ -101,27 +101,43 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
     }
 });
 
-router.post('/refresh-token', async (req: Request, res: Response) => {
+router.post('/logout', async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
-    console.log('refreshToken', req.cookies.refreshToken);
-
+    if (!refreshToken) return res.status(401).send();
     const isJwtNotExpired = jwtService.getUserIdByToken(refreshToken);
+
     if (!isJwtNotExpired) return res.status(401).send();
 
     const tokenItem = await refreshTokensQueryRepo.findByToken(refreshToken);
+    // @ts-ignore
+    const isDel = await refreshTokensDomain.deleteOne(tokenItem.id);
+    
+    if (!isDel) return res.status(401).send();
+    return res.status(204).send();
+});
+
+router.post('/refresh-token', async (req: Request, res: Response) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).send();
+    const isJwtNotExpired = jwtService.getUserIdByToken(refreshToken);
+
+    if (!isJwtNotExpired) return res.status(401).send();
+
+    const tokenItem = await refreshTokensQueryRepo.findByToken(refreshToken);
+    
     if (!tokenItem || tokenItem.wasUsed) return res.status(401).send();
 
     // @ts-ignore
-    const user = await usersQueryRepo.findById(isJwtNotExpired);
+    const user = await usersQueryRepo.findById(isJwtNotExpired.userId);
     if (!user) return res.status(401).send();
 
     await refreshTokensDomain.update(tokenItem.id, { ...tokenItem, wasUsed: true });
 
-    const newAccessToken = jwtService.createJWT(user, '30s');
-    const newRefreshToken = jwtService.createJWT(user, '60s');
+    const newAccessToken = jwtService.createJWT(user, '10s');
+    const newRefreshToken = jwtService.createJWT(user, '20s');
     await refreshTokensDomain.create({ token: newRefreshToken, wasUsed: false });
 
-    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true });
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true });
     res.status(HTTP_STATUSES.OK_200).send({ accessToken: newAccessToken });
 });
 

@@ -2,7 +2,7 @@ import 'dotenv/config'
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
+import cookies from 'cookie-parser';
 import blogsRoute from './routes/blogs.routes';
 import postsRoute from './routes/posts.routes';
 import usersRoute from './routes/users.routes';
@@ -14,7 +14,7 @@ import { settings } from './settings';
 const { PORT, PORT_TEST } = settings;
 
 export const app = express();
-
+app.use(cookies());
 app.use(cors({
     origin: '*',
     allowedHeaders: ['Origin', 'Content-Type', 'Accept'],
@@ -22,7 +22,7 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser('secret-key'));
+
 
 app.get('/', (req, res) => res.send('Hello, world!'));
 app.use('/api/posts', postsRoute);

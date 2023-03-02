@@ -109,6 +109,7 @@ router.post('/logout', async (req: Request, res: Response) => {
     if (!isJwtNotExpired) return res.status(401).send();
 
     const tokenItem = await refreshTokensQueryRepo.findByToken(refreshToken);
+    if (!tokenItem || tokenItem?.wasUsed) return res.status(401).send();
     // @ts-ignore
     const isDel = await refreshTokensDomain.deleteOne(tokenItem.id);
     

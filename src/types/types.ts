@@ -89,13 +89,17 @@ export type Comment = {
     commentatorInfo?: CommentatorInfo,
 }
 
-export type RefreshTokens = {
-    token: string,
-    wasUsed: boolean,
+export type DeviceActiveSessions = {
+    ip: string,
+    title: string,
+    lastActiveDate: string,
+    deviceId: string,
+    _expirationDate: string,
+    _userId: string | number,
 }
 
 
-export type RefreshTokensModel = BaseDbEntity & RefreshTokens;
+export type DeviceActiveSessionsModel = BaseDbEntity & DeviceActiveSessions;
 export type BlogModel = BaseDbEntity & Blog;
 export type PostModel = BaseDbEntity & Post;
 export type UserModel = BaseDbEntity & User;

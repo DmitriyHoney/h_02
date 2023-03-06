@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import bcrypt from 'bcrypt';
 import { startApp } from "..";
 
@@ -29,13 +30,23 @@ export const hashPassword = (password: string): Promise<string> => {
 };
 
 type expiredObject = {
-    hours: number
+    hours: number,
+    min: number,
+    sec: number,
 }
 
 export const generateExpiredDate = (obj: expiredObject) => {
     const expiredDate = new Date();
     expiredDate.setHours(expiredDate.getHours() + obj.hours);
+    expiredDate.setHours(expiredDate.getMinutes() + obj.min);
+    expiredDate.setHours(expiredDate.getSeconds() + obj.sec);
     return expiredDate;
+};
+
+export const getUserIp = (req: Request) => {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    if (!ip) return false;
+    return Array.isArray(ip) ? ip[0] : ip;
 };
 
 export const generateUUID = () => {

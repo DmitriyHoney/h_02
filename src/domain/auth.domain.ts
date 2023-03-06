@@ -10,11 +10,11 @@ export default {
             ? usersQueryRepo.findUserByEmail.bind(usersQueryRepo)
             : usersQueryRepo.findUserByLogin.bind(usersQueryRepo);
 
-        const isExistUser = await findMethod(loginOrEmail);
-        if (!isExistUser) throw new Error(VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID);
+        const user = await findMethod(loginOrEmail);
+        if (!user) throw new Error(VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID);
 
-        const isPasswordValid = await comparePasswords(password, isExistUser.password);
-        return isPasswordValid ? isExistUser : false;
+        const isPasswordValid = await comparePasswords(password, user.password);
+        return isPasswordValid ? user : null;
     },
     isCodeConfirmationValid: (code: string, user: User) => {
         // @ts-ignore

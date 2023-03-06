@@ -1,21 +1,21 @@
 import { Router, Request, Response } from 'express';
-import { authMiddlewareJWT, authBody as validatorMiddleware, authRegistration, authRegistrationConfirm, authRegistrationResend } from '../middlewares/auth.middleware';
+import { authMiddlewareJWT, authBody as validatorMiddleware, authRegistration, authRegistrationConfirm, authRegistrationResend, authCheckValidRefreshJWT } from '../middlewares/auth.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
 import { HTTP_STATUSES, ValidationErrors, VALIDATION_ERROR_MSG } from '../types/types';
 import authDomain from '../domain/auth.domain';
 import { jwtService } from '../helpers/jwt-service';
 import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry';
 import { emailManager } from '../managers/email.manager';
-import { generateExpiredDate, generateUUID } from '../helpers';
+import { generateExpiredDate, generateUUID, getUserIp } from '../helpers';
 import usersDomain from '../domain/users.domain';
-import refreshTokensDomain from '../domain/refresh-tokens.domain';
-import { refreshTokensQueryRepo } from '../repositries/refresh-tokens.repositry';
+import DeviceActiveSessionsDomain from '../domain/activeDeviceSessions.domain';
+import { deviceActiveSessionsQueryRepo } from '../repositries/activeDeviceSessions.repositry';
 
 const router = Router();
 
 router.post('/registration', ...authRegistration, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const confirmedInfo = { 
-        code: generateUUID(), codeExpired: generateExpiredDate({ hours: 1 }).toISOString(), isConfirmedEmail: false 
+        code: generateUUID(), codeExpired: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(), isConfirmedEmail: false 
     };
     try {
         await usersDomain.create({ ...req.body, confirmedInfo });
@@ -84,15 +84,24 @@ router.post('/registration-email-resending', ...authRegistrationResend, validato
 
 router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     try {
-        const isUserSuccessAuth = await authDomain.login(req.body);
-        if (!isUserSuccessAuth) {
-            res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
-            return;
-        }
-        const accessToken = jwtService.createJWT(isUserSuccessAuth, '10s');
-        const refreshToken = jwtService.createJWT(isUserSuccessAuth, '20s');
-        await refreshTokensDomain.create({ token: refreshToken, wasUsed: false });
-        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
+        const user = await authDomain.login(req.body);
+        if (!user) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
+        const deviceId = generateUUID();
+        const accessToken = jwtService.createJWT(user, '10s');
+        const refreshToken = jwtService.createJWT(user, '20s', deviceId);
+        
+        const ip = getUserIp(req);
+        if (!ip) return res.status(HTTP_STATUSES.BAD_REQUEST_400).send();
+        
+        await DeviceActiveSessionsDomain.create({ 
+            ip,
+            title: req.get('User-Agent') || 'user agent unknown',
+            lastActiveDate: new Date().toISOString(),
+            deviceId,
+            _expirationDate: generateExpiredDate({ hours: 0, min: 0, sec: 20 }).toISOString(),
+            _userId: user.id,
+        });
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false });
         res.status(HTTP_STATUSES.OK_200).send({ accessToken });
     } catch(e) {
         if ((e as Error).message === VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID) {
@@ -101,44 +110,41 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
     }
 });
 
-router.post('/logout', async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).send();
-    const isJwtNotExpired = jwtService.getUserIdByToken(refreshToken);
+router.post('/logout', authCheckValidRefreshJWT, async (req: Request, res: Response) => {
+    const { userIP, verifiedToken } = req.context;
 
-    if (!isJwtNotExpired) return res.status(401).send();
-
-    const tokenItem = await refreshTokensQueryRepo.findByToken(refreshToken);
-    if (!tokenItem || tokenItem?.wasUsed) return res.status(401).send();
     // @ts-ignore
-    const isDel = await refreshTokensDomain.deleteOne(tokenItem.id);
+    const tokenItem = await deviceActiveSessionsQueryRepo.findByIpAndDeviceId(userIP, verifiedToken?.deviceId);
+    if (!tokenItem) return res.status(401).send();
+
+    // @ts-ignore
+    const isDel = await DeviceActiveSessionsDomain.deleteOne(tokenItem.id);
     
     if (!isDel) return res.status(401).send();
     return res.status(204).send();
 });
 
-router.post('/refresh-token', async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).send();
-    const isJwtNotExpired = jwtService.getUserIdByToken(refreshToken);
-
-    if (!isJwtNotExpired) return res.status(401).send();
-
-    const tokenItem = await refreshTokensQueryRepo.findByToken(refreshToken);
-    
-    if (!tokenItem || tokenItem.wasUsed) return res.status(401).send();
+router.post('/refresh-token', authCheckValidRefreshJWT, async (req: Request, res: Response) => {
+    const { userIP, verifiedToken } = req.context;
 
     // @ts-ignore
-    const user = await usersQueryRepo.findById(isJwtNotExpired.userId);
+    const tokenItem = await deviceActiveSessionsQueryRepo.findByIpAndDeviceId(userIP, verifiedToken?.deviceId);
+    if (!tokenItem) return res.status(401).send();
+
+    // @ts-ignore
+    const user = await usersQueryRepo.findById(req.context.verifiedToken?.userId);
     if (!user) return res.status(401).send();
 
-    await refreshTokensDomain.update(tokenItem.id, { ...tokenItem, wasUsed: true });
+    await DeviceActiveSessionsDomain.update(tokenItem.id, { 
+        ...tokenItem, 
+        lastActiveDate: new Date().toISOString(),
+        _expirationDate: generateExpiredDate({ hours: 0, min: 0, sec: 20 }).toISOString(),
+    });
 
     const newAccessToken = jwtService.createJWT(user, '10s');
     const newRefreshToken = jwtService.createJWT(user, '20s');
-    await refreshTokensDomain.create({ token: newRefreshToken, wasUsed: false });
 
-    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true });
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: false });
     res.status(HTTP_STATUSES.OK_200).send({ accessToken: newAccessToken });
 });
 

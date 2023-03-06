@@ -8,6 +8,7 @@ import postsRoute from './routes/posts.routes';
 import usersRoute from './routes/users.routes';
 import authRoute from './routes/auth.routes';
 import commentsRoute from './routes/comments.routes';
+import activeDeviceSissionsRoute from './routes/activeDeviceSessions.routes';
 import testRoute from './routes/test.routes';
 import { connectDB } from './db'
 import { settings } from './settings';
@@ -30,6 +31,7 @@ app.use('/api/blogs', blogsRoute);
 app.use('/api/users', usersRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/comments', commentsRoute);
+app.use('/api/security/devices', activeDeviceSissionsRoute);
 app.use('/api/testing/all-data', testRoute);
 
 

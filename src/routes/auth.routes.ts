@@ -87,8 +87,8 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
         const user = await authDomain.login(req.body);
         if (!user) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
         const deviceId = generateUUID();
-        const accessToken = jwtService.createJWT(user, '10s');
-        const refreshToken = jwtService.createJWT(user, '20s', deviceId);
+        const accessToken = jwtService.createJWT(user, '30m');
+        const refreshToken = jwtService.createJWT(user, '60m', deviceId);
         
         const ip = getUserIp(req);
         if (!ip) return res.status(HTTP_STATUSES.BAD_REQUEST_400).send();
@@ -98,7 +98,7 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
             title: req.get('User-Agent') || 'user agent unknown',
             lastActiveDate: new Date().toISOString(),
             deviceId,
-            _expirationDate: generateExpiredDate({ hours: 0, min: 0, sec: 20 }).toISOString(),
+            _expirationDate: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(),
             _userId: user.id,
         });
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false });
@@ -112,7 +112,8 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
 
 router.post('/logout', authCheckValidRefreshJWT, async (req: Request, res: Response) => {
     const { userIP, verifiedToken } = req.context;
-
+    console.log(333);
+    
     // @ts-ignore
     const tokenItem = await deviceActiveSessionsQueryRepo.findByIpAndDeviceId(userIP, verifiedToken?.deviceId);
     if (!tokenItem) return res.status(401).send();
@@ -126,23 +127,28 @@ router.post('/logout', authCheckValidRefreshJWT, async (req: Request, res: Respo
 
 router.post('/refresh-token', authCheckValidRefreshJWT, async (req: Request, res: Response) => {
     const { userIP, verifiedToken } = req.context;
-
+    
+    console.log(222, userIP, verifiedToken);
+    
     // @ts-ignore
     const tokenItem = await deviceActiveSessionsQueryRepo.findByIpAndDeviceId(userIP, verifiedToken?.deviceId);
     if (!tokenItem) return res.status(401).send();
+    console.log(111);
 
     // @ts-ignore
     const user = await usersQueryRepo.findById(req.context.verifiedToken?.userId);
     if (!user) return res.status(401).send();
 
+    console.log('tokenItem', tokenItem);
+
     await DeviceActiveSessionsDomain.update(tokenItem.id, { 
         ...tokenItem, 
         lastActiveDate: new Date().toISOString(),
-        _expirationDate: generateExpiredDate({ hours: 0, min: 0, sec: 20 }).toISOString(),
+        _expirationDate: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(),
     });
 
-    const newAccessToken = jwtService.createJWT(user, '10s');
-    const newRefreshToken = jwtService.createJWT(user, '20s');
+    const newAccessToken = jwtService.createJWT(user, '30m');
+    const newRefreshToken = jwtService.createJWT(user, '60m', tokenItem.deviceId);
 
     res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: false });
     res.status(HTTP_STATUSES.OK_200).send({ accessToken: newAccessToken });

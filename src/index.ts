@@ -15,14 +15,11 @@ import { settings } from './settings';
 const { PORT, PORT_TEST } = settings;
 
 export const app = express();
+app.use(cors());
 app.use(cookies());
-app.use(cors({
-    origin: '*',
-    allowedHeaders: ['Origin', 'Content-Type', 'Accept'],
-    methods: '*'
-}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.set('trust proxy', true);
 
 
 app.get('/', (req, res) => res.send('Hello, world!'));

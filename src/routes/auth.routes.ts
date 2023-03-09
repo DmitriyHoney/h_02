@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { authMiddlewareJWT, authBody as validatorMiddleware, authRegistration, authRegistrationConfirm, authRegistrationResend, authCheckValidRefreshJWT } from '../middlewares/auth.middleware';
+import { authMiddlewareJWT, authBody as validatorMiddleware, authRegistration, authRegistrationConfirm, authRegistrationResend, authCheckValidRefreshJWT, secureToManyRequests } from '../middlewares/auth.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
 import { HTTP_STATUSES, ValidationErrors, VALIDATION_ERROR_MSG } from '../types/types';
 import authDomain from '../domain/auth.domain';
@@ -13,7 +13,7 @@ import { deviceActiveSessionsQueryRepo } from '../repositries/activeDeviceSessio
 
 const router = Router();
 
-router.post('/registration', ...authRegistration, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.post('/registration', ...authRegistration, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const confirmedInfo = { 
         code: generateUUID(), codeExpired: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(), isConfirmedEmail: false 
     };
@@ -32,7 +32,7 @@ router.post('/registration', ...authRegistration, validatorsErrorsMiddleware, as
     }
 });
 
-router.post('/registration-confirmation', ...authRegistrationConfirm, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.post('/registration-confirmation', ...authRegistrationConfirm, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const errorsCodeAlreadyActivatedOrExpired: ValidationErrors = {
         errorsMessages: [{ message: 'Code already activated or expired', field: 'code' }],
     };
@@ -53,7 +53,7 @@ router.post('/registration-confirmation', ...authRegistrationConfirm, validators
     return isWasUpdated ? res.status(204).send() : res.status(400).send();
 });
 
-router.post('/registration-email-resending', ...authRegistrationResend, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.post('/registration-email-resending', ...authRegistrationResend, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const expiredDate = new Date();
     expiredDate.setHours(expiredDate.getHours() + 1);
     const user = await usersQueryRepo.findUserByEmail(req.body.email);
@@ -82,7 +82,7 @@ router.post('/registration-email-resending', ...authRegistrationResend, validato
     }
 });
 
-router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.post('/login', ...validatorMiddleware, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     try {
         const user = await authDomain.login(req.body);
         if (!user) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
@@ -112,8 +112,6 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
 
 router.post('/logout', authCheckValidRefreshJWT, async (req: Request, res: Response) => {
     const { userIP, verifiedToken } = req.context;
-    console.log(333);
-    
     // @ts-ignore
     const tokenItem = await deviceActiveSessionsQueryRepo.findByIpAndDeviceId(userIP, verifiedToken?.deviceId);
     if (!tokenItem) return res.status(401).send();

@@ -38,8 +38,8 @@ type expiredObject = {
 export const generateExpiredDate = (obj: expiredObject) => {
     const expiredDate = new Date();
     expiredDate.setHours(expiredDate.getHours() + obj.hours);
-    expiredDate.setHours(expiredDate.getMinutes() + obj.min);
-    expiredDate.setHours(expiredDate.getSeconds() + obj.sec);
+    expiredDate.setMinutes(expiredDate.getMinutes() + obj.min);
+    expiredDate.setSeconds(expiredDate.getSeconds() + obj.sec);
     return expiredDate;
 };
 

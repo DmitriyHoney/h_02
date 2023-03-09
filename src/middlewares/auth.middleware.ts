@@ -3,7 +3,7 @@ import { HTTP_STATUSES, VALIDATION_ERROR_MSG } from '../types/types';
 import { Request, Response, NextFunction } from 'express';
 import { jwtService } from '../helpers/jwt-service';
 import { usersQueryRepo } from '../repositries/users.repositry';
-import { getUserIp, isEmail } from '../helpers';
+import { generateExpiredDate, getUserIp, isEmail } from '../helpers';
 
 const users = {
   admin: 'qwerty',
@@ -117,4 +117,23 @@ export const authCheckValidRefreshJWT = async (req: Request, res: Response, next
   // @ts-ignore
   req.context.verifiedToken = verifiedToken;
   next();
+};
+
+const tempMethodsCount: any = {};
+
+export const secureToManyRequests = async (req: Request, res: Response, next: NextFunction) => {
+  const ip = getUserIp(req);
+  const { url, method } = req;
+  const key = `${ip} ${method} ${url}`;
+  if (!tempMethodsCount[key]) {
+    tempMethodsCount[key] = { count: 1, date: generateExpiredDate({ hours: 0, min: 1, sec: 0 }).toISOString() };
+    next();
+  } else {
+    const curDate = new Date();
+    const lastMethodReqDate = new Date(tempMethodsCount[key].date);
+    tempMethodsCount[key].count++;
+    if (curDate < lastMethodReqDate) return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
+    tempMethodsCount[key].date = generateExpiredDate({ hours: 0, min: 1, sec: 0 }).toISOString();
+    next(); 
+  }
 };

@@ -101,7 +101,7 @@ router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async 
             _expirationDate: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(),
             _userId: user.id,
         });
-        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false });
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
         res.status(HTTP_STATUSES.OK_200).send({ accessToken });
     } catch(e) {
         if ((e as Error).message === VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID) {
@@ -150,7 +150,7 @@ router.post('/refresh-token', authCheckValidRefreshJWT, async (req: Request, res
     const newAccessToken = jwtService.createJWT(user, '30m');
     const newRefreshToken = jwtService.createJWT(user, '60m', tokenItem.deviceId);
 
-    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: false });
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true });
     res.status(HTTP_STATUSES.OK_200).send({ accessToken: newAccessToken });
 });
 

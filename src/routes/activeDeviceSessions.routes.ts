@@ -7,15 +7,10 @@ import { BaseGetQueryParams, HTTP_STATUSES } from '../types/types';
 const router = Router();
 
 router.get('/', authCheckValidRefreshJWT, async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Response) => {
-    const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
     const { verifiedToken } = req.context;
     const result = await deviceActiveSessionsQueryRepo.findAllByCurrentUser(
         // @ts-ignore
-        verifiedToken?.userId, 
-        pageSize, 
-        pageNumber, 
-        sortBy, 
-        sortDirection
+        verifiedToken?.userId,
     );
     res.send(result);
 });

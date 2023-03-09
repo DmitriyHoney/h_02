@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { authMiddlewareJWT, authBody as validatorMiddleware, authRegistration, authRegistrationConfirm, authRegistrationResend, authCheckValidRefreshJWT, secureToManyRequests } from '../middlewares/auth.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
 import { HTTP_STATUSES, ValidationErrors, VALIDATION_ERROR_MSG } from '../types/types';
@@ -82,10 +82,12 @@ router.post('/registration-email-resending', ...authRegistrationResend, secureTo
     }
 });
 
-router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, secureToManyRequests, async (req: Request, res: Response) => {
+router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await authDomain.login(req.body);
         if (!user) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
+
+        secureToManyRequests(req, res, next);
         const deviceId = generateUUID();
         const accessToken = jwtService.createJWT(user, '30m');
         const refreshToken = jwtService.createJWT(user, '60m', deviceId);

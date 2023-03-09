@@ -3,8 +3,8 @@ import { DeviceActiveSessionsModel, DeviceActiveSessions } from '../types/types'
 import { collection } from '../db';
 
 class DeviceActiveSessionsCommandRepo extends CommandRepo<DeviceActiveSessionsModel, DeviceActiveSessions> {
-    async deleteAllByUserId(userId: string) {
-        const result = await collection<DeviceActiveSessionsModel>(this.collectionName).deleteMany({ _userId: userId });
+    async deleteAllByUserId(userId: string, excludeItemId: string) {
+        const result = await collection<DeviceActiveSessionsModel>(this.collectionName).deleteMany({ _userId: userId, id: { $ne: excludeItemId } });
         return result.deletedCount > 0;
     }
 }

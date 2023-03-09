@@ -28,8 +28,12 @@ router.delete('/:deviceId', authCheckValidRefreshJWT, async (req: Request<{}, {}
 });
 
 router.delete('/', authCheckValidRefreshJWT, async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Response) => {
+    // exclude current 
     // @ts-ignore
-    const result = await deviceActiveSessionsCommandRepo.deleteAllByUserId(req.context.verifiedToken?.userId);
+    const tokenItem = await deviceActiveSessionsQueryRepo.findByIpAndDeviceId(req.context.userIP, req.context.verifiedToken?.deviceId);
+
+    // @ts-ignore
+    const result = await deviceActiveSessionsCommandRepo.deleteAllByUserId(req.context.verifiedToken?.userId, tokenItem.id);
     if (!result) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
 
     res.status(HTTP_STATUSES.NO_CONTENT_204).send();

@@ -128,12 +128,9 @@ router.post('/logout', authCheckValidRefreshJWT, async (req: Request, res: Respo
 router.post('/refresh-token', authCheckValidRefreshJWT, async (req: Request, res: Response) => {
     const { userIP, verifiedToken } = req.context;
     
-    console.log(222, userIP, verifiedToken);
-    
     // @ts-ignore
     const tokenItem = await deviceActiveSessionsQueryRepo.findByIpAndDeviceId(userIP, verifiedToken?.deviceId);
     if (!tokenItem) return res.status(401).send();
-    console.log(111);
 
     // @ts-ignore
     const user = await usersQueryRepo.findById(req.context.verifiedToken?.userId);

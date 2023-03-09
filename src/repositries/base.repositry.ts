@@ -89,6 +89,9 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
         };
         return new Promise((resolve: (value: ReturnedQueryGetAll<I>) => void) => resolve(result));
     }
+    async findAll(filters: object = {}, excludeFields: object = {}) {
+        return collection<I>(this.collectionName).find({ ...filters }, { projection: { _id: 0, password: 0, ...excludeFields } }).toArray();
+    }
     async findById(id: string, excludeFields: object = {}) {
         // @ts-ignore
         return await collection<I>(this.collectionName).findOne({ id }, { projection: { _id: 0, password: 0, ...excludeFields } })

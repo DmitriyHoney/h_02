@@ -18,22 +18,8 @@ class DeviceActiveSessionsQueryRepo extends QueryRepo<DeviceActiveSessionsModel>
     async findByDeviceId(deviceId: string) {
         return await collection<DeviceActiveSessionsModel>(this.collectionName).findOne({ deviceId }, { projection: { _id: 0 } })
     }
-    async findAllByCurrentUser(
-        userId: string | number,
-
-        pageSize?: string, 
-        pageNumber?: string,
-        sortBy?: string,
-        sortDirection?: string,
-    ) {
-        return await super.find(
-            pageSize, 
-            pageNumber, 
-            sortBy, 
-            sortDirection, 
-            { _userId: userId }, 
-            { _expirationDate: 0, _userId: 0 }
-        );
+    async findAllByCurrentUser(userId: string | number) {
+        return await super.findAll({ _userId: userId }, { _expirationDate: 0, _userId: 0 });
     }
 }
 export const deviceActiveSessionsQueryRepo = new DeviceActiveSessionsQueryRepo('active_device_sessions');

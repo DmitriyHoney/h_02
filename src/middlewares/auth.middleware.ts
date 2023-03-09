@@ -126,19 +126,21 @@ export const secureToManyRequests = async (req: Request, res: Response, next: Ne
   const ip = getUserIp(req);
   const { url, method } = req;
   const key = `${ip} ${method} ${url}`;
-  if (!tempMethodsCount[key]) {
-    tempMethodsCount[key] = { count: 1, date: generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString() };
-    next();
-  } else {
-    tempMethodsCount[key].count++;
+  !tempMethodsCount[key]
+    ? tempMethodsCount[key] = { count: 1, date: null }
+    : tempMethodsCount[key].count++;
+  
+  if (tempMethodsCount[key].count > 5 && !tempMethodsCount[key].date) {
+    const blockedDate = generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString();
+    tempMethodsCount[key].date = blockedDate;
+  }
 
+  if (tempMethodsCount[key].date) {
     const curDate = new Date();
     const lastMethodReqDate = new Date(tempMethodsCount[key].date);
-
-    if (tempMethodsCount[key].count > 5 && curDate < lastMethodReqDate) {
-      return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
-    }
-    tempMethodsCount[key].date = generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString();
-    next(); 
+    if (curDate < lastMethodReqDate) return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
+    delete tempMethodsCount[key];
   }
+
+  next();
 };

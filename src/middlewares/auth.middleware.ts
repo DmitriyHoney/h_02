@@ -130,11 +130,17 @@ export const secureToManyRequests = async (req: Request, res: Response, next: Ne
     tempMethodsCount[key] = { count: 1, date: generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString() };
     next();
   } else {
-    const curDate = new Date();
-    const lastMethodReqDate = new Date(tempMethodsCount[key].date);
-    tempMethodsCount[key].count++;
-    if (curDate < lastMethodReqDate) return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
-    tempMethodsCount[key].date = generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString();
-    next(); 
+    if (tempMethodsCount[key].count < 5) {
+      tempMethodsCount[key].count++;
+      tempMethodsCount[key].date = generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString();
+      next();
+    } else {
+      const curDate = new Date();
+      const lastMethodReqDate = new Date(tempMethodsCount[key].date);
+      tempMethodsCount[key].count++;
+      if (curDate < lastMethodReqDate) return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
+      tempMethodsCount[key].date = generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString();
+      next(); 
+    }
   }
 };

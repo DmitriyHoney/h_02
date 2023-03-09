@@ -121,19 +121,20 @@ export const authCheckValidRefreshJWT = async (req: Request, res: Response, next
 
 const tempMethodsCount: any = {};
 
+// TODO: перенести хранение подсчёта кол-ва запросов в базу
 export const secureToManyRequests = async (req: Request, res: Response, next: NextFunction) => {
   const ip = getUserIp(req);
   const { url, method } = req;
   const key = `${ip} ${method} ${url}`;
   if (!tempMethodsCount[key]) {
-    tempMethodsCount[key] = { count: 1, date: generateExpiredDate({ hours: 0, min: 1, sec: 0 }).toISOString() };
+    tempMethodsCount[key] = { count: 1, date: generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString() };
     next();
   } else {
     const curDate = new Date();
     const lastMethodReqDate = new Date(tempMethodsCount[key].date);
     tempMethodsCount[key].count++;
     if (curDate < lastMethodReqDate) return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
-    tempMethodsCount[key].date = generateExpiredDate({ hours: 0, min: 1, sec: 0 }).toISOString();
+    tempMethodsCount[key].date = generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString();
     next(); 
   }
 };

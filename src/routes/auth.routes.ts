@@ -82,7 +82,7 @@ router.post('/registration-email-resending', ...authRegistrationResend, secureTo
     }
 });
 
-router.post('/login', ...validatorMiddleware, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.post('/login', ...validatorMiddleware, validatorsErrorsMiddleware, secureToManyRequests, async (req: Request, res: Response) => {
     try {
         const user = await authDomain.login(req.body);
         if (!user) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();

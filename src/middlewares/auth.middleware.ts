@@ -126,21 +126,46 @@ export const secureToManyRequests = async (req: Request, res: Response, next: Ne
   const ip = getUserIp(req);
   const { url, method } = req;
   const key = `${ip} ${method} ${url}`;
-  !tempMethodsCount[key]
-    ? tempMethodsCount[key] = { count: 1, date: null }
-    : tempMethodsCount[key].count++;
-  
-  if (tempMethodsCount[key].count > 5 && !tempMethodsCount[key].date) {
-    const blockedDate = generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString();
-    tempMethodsCount[key].date = blockedDate;
-  }
 
-  if (tempMethodsCount[key].date) {
+  const initMeta = () => {
+    tempMethodsCount[key] = { 
+      count: 1, 
+      blockedDate: generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString(), 
+      updatedAt: new Date().toISOString() 
+    };
+  }
+  
+  if (!tempMethodsCount[key]) {
+    initMeta();
+    next();
+    return;
+  };
+
+  tempMethodsCount[key].count++;
+  
+  if (isReqLastDateIsOut()) {
+    initMeta();
+    next();
+    return;
+  };
+  
+  tempMethodsCount[key].updatedAt = new Date().toISOString();
+  tempMethodsCount[key].blockedDate = generateExpiredDate({ hours: 0, min: 0, sec: 10 }).toISOString();
+
+  if (tempMethodsCount[key].count > 5) {
     const curDate = new Date();
-    const lastMethodReqDate = new Date(tempMethodsCount[key].date);
+    const lastMethodReqDate = new Date(tempMethodsCount[key].blockedDate);
     if (curDate < lastMethodReqDate) return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
     delete tempMethodsCount[key];
   }
-
+  
   next();
+  
+  function isReqLastDateIsOut() {
+    const lastUpd = new Date(tempMethodsCount[key].updatedAt);
+    const curDate = new Date();
+    // @ts-ignore
+    const diffSec = Math.abs(curDate - lastUpd) / 1000;
+    return diffSec > 10;
+  }
 };

@@ -39,7 +39,10 @@ export type PaginationSortingType<I> = {
     items: Array<I>
 }
 
-export type BaseDbEntity = { id: string, createdAt: string };
+export type BaseDbEntity = {
+    createdAt: NativeDate,
+    updatedAt: NativeDate, 
+};
 
 export type Blog = {
     name: string,
@@ -103,5 +106,5 @@ export type DeviceActiveSessions = {
 export type DeviceActiveSessionsModel = BaseDbEntity & DeviceActiveSessions;
 export type BlogModel = BaseDbEntity & Blog;
 export type PostModel = BaseDbEntity & Post;
-export type UserModel = BaseDbEntity & User;
+export type UserModelType = BaseDbEntity & User;
 export type CommentModel = BaseDbEntity & Comment;

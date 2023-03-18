@@ -53,6 +53,7 @@ router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, vali
         ...req.body, 
         postId: req.params.postId,
         commentatorInfo: {
+            // @ts-ignore
             userId: req.context.user?.id,
             userLogin: req.context.user?.login
         }

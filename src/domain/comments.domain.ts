@@ -1,5 +1,5 @@
 import { commentsCommandRepo, commentsQueryRepo } from '../repositries/comments.repositry';
-import { Comment, HTTP_STATUSES, UserModel } from '../types/types';
+import { Comment, HTTP_STATUSES, UserModelType } from '../types/types';
 
 export default {
     create: async (body: Comment) => {

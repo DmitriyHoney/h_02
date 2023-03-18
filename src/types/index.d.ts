@@ -1,10 +1,10 @@
-import { UserModel } from "./types";
+import { UserModelType } from "./types";
 
 declare global {
     declare namespace Express {
         export interface Request {
             context: {
-                user: UserModel | null,
+                user: UserModelType | null,
                 verifiedToken: { 
                     userId: string | number, 
                     deviceId: string | number 

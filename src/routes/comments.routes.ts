@@ -24,6 +24,7 @@ router.get('/:id/', async (req: Request, res: Response) => {
 });
 
 router.put('/:id/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    // @ts-ignore
     const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
     if (isCommentOwnUser === HTTP_STATUSES.NOT_FOUND_404) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
     if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();
@@ -35,6 +36,7 @@ router.put('/:id/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsM
 });
 
 router.delete('/:id/', authMiddlewareJWT, async (req: Request, res: Response) => {
+    // @ts-ignore
     const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
     if (isCommentOwnUser === HTTP_STATUSES.NOT_FOUND_404) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
     if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();

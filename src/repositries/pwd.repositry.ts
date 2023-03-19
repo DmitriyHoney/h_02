@@ -10,7 +10,7 @@ export const pwdCommandRepo = new PwdCommandRepo(RecreatePwdModel);
 
 class PwdQueryRepo extends QueryRepo<PwdModelType> {
     async findByCode(code: string) {
-        return await this.collection.findOne({ code, isActive: true });
+        return await this.collection.findOne({ code, isActive: false });
     }
 }
 // @ts-ignore

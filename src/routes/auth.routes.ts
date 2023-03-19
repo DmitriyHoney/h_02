@@ -39,7 +39,7 @@ router.post('/registration', ...authRegistration, secureToManyRequests, validato
     }
 });
 
-router.post('/password-recovery', ...authRegistrationResend, authCheckValidRefreshJWT, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.post('/password-recovery', ...authRegistrationResend, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const confirmedInfo: Pwd = { 
         code: generateUUID(), expiredDate: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(), email: req.body.email, isActive: false,
     };

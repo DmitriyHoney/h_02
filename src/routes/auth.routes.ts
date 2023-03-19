@@ -41,7 +41,7 @@ router.post('/registration', ...authRegistration, secureToManyRequests, validato
 
 router.post('/password-recovery', ...authRegistrationResend, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const confirmedInfo: Pwd = { 
-        code: generateUUID(), expiredDate: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(), email: req.body.email, isActive: true,
+        code: generateUUID(), expiredDate: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(), email: req.body.email, isActive: false,
     };
     try {
         pwdDomain.create(confirmedInfo);
@@ -83,7 +83,7 @@ router.post('/new-password', ...newPassAuthBody, secureToManyRequests, validator
         const userUpdated = { password };
         // @ts-ignore
         await usersDomain.update(user?.id, userUpdated);
-        await pwdCommandRepo.update(codeInDb.id, { ...codeInDb, isActive: false });
+        await pwdCommandRepo.update(codeInDb.id, { ...codeInDb, isActive: true });
         return res.status(HTTP_STATUSES.NO_CONTENT_204).send({});
     } catch (e) {
         return res.status(HTTP_STATUSES.BAD_REQUEST_400).send({});

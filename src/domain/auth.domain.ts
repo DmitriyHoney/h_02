@@ -1,9 +1,9 @@
-import { comparePasswords, isEmail, isLogin } from '../helpers';
+import { comparePasswords, isEmail } from '../helpers';
 import { usersQueryRepo } from '../repositries/users.repositry';
-import { AuthBody, Blog, User, VALIDATION_ERROR_MSG } from '../types/types';
+import { AuthBody, User, VALIDATION_ERROR_MSG } from '../types/types';
 
 export default {
-    login: async (body: AuthBody) => {
+    _login: async (body: AuthBody) => {
         const { loginOrEmail, password } = body;
 
         const findMethod = isEmail(loginOrEmail)
@@ -11,10 +11,17 @@ export default {
             : usersQueryRepo.findUserByLogin.bind(usersQueryRepo);
 
         const user = await findMethod(loginOrEmail);
-        if (!user) throw new Error(VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID);
-
+        if (!user)
+            throw new Error(VALIDATION_ERROR_MSG.EMAIL_OR_PASSWORD_NOT_VALID);
+        // @ts-ignore
         const isPasswordValid = await comparePasswords(password, user.password);
         return isPasswordValid ? user : null;
+    },
+    get login() {
+        return this._login;
+    },
+    set login(value) {
+        this._login = value;
     },
     isCodeConfirmationValid: (code: string, user: User) => {
         // @ts-ignore

@@ -122,7 +122,7 @@ export const authCheckValidRefreshJWT = async (req: Request, res: Response, next
   
   const verifiedToken = jwtService.verifyToken(refreshToken);
   if (!verifiedToken) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
-
+  console.log(1111);
   const ip = getUserIp(req);
   if (!ip) return res.status(HTTP_STATUSES.BAD_REQUEST_400).send();
 

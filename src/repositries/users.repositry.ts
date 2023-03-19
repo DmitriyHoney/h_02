@@ -4,6 +4,7 @@ import { UserModel } from '../db/collections/users.collection';
 import { ObjectId } from 'mongoose';
 
 class UsersCommandRepo extends CommandRepo<UserModelType, User> {}
+// @ts-ignore
 export const usersCommandRepo =  new UsersCommandRepo(UserModel);
 
 const baseUserExludeFields = {
@@ -54,5 +55,5 @@ export const userMappersQuery = {
         }
     }
 }
-
+// @ts-ignore
 export const usersQueryRepo = new UsersQueryRepo(UserModel);

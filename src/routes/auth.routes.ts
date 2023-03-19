@@ -11,7 +11,7 @@ import authDomain from '../domain/auth.domain';
 import { jwtService } from '../helpers/jwt-service';
 import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry';
 import { emailManager } from '../managers/email.manager';
-import { comparePasswords, generateExpiredDate, generateUUID, getUserIp, hashPassword } from '../helpers';
+import { generateExpiredDate, generateUUID, getUserIp, hashPassword } from '../helpers';
 import usersDomain from '../domain/users.domain';
 import DeviceActiveSessionsDomain from '../domain/activeDeviceSessions.domain';
 import { deviceActiveSessionsQueryRepo } from '../repositries/activeDeviceSessions.repositry';
@@ -112,7 +112,7 @@ router.post('/registration-confirmation', ...authRegistrationConfirm, secureToMa
     
     const user = await usersQueryRepo.findNoActUserByConfirmedCode(req.body.code);
     if (!user || user.confirmedInfo?.isConfirmedEmail) return res.status(400).send(errorsCodeAlreadyActivatedOrExpired);
-    
+    // @ts-ignore
     const isCodeValid = authDomain.isCodeConfirmationValid(req.body.code, user);
     if (!isCodeValid) return res.status(400).send(errorsCodeNotValid);
     // @ts-ignore

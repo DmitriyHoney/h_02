@@ -19,6 +19,7 @@ router.delete('/:deviceId', authCheckValidRefreshJWT, async (req: Request<{}, {}
     // @ts-ignore
     const findRow = await deviceActiveSessionsQueryRepo.findByDeviceId(req.params.deviceId);
     if (!findRow) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
+    // @ts-ignore
     if (findRow._userId !== req.context.verifiedToken?.userId) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();
 
     const result = await deviceActiveSessionsCommandRepo.delete(findRow.id);

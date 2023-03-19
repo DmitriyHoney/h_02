@@ -28,7 +28,6 @@ app.get('/', (req, res) => res.send('Hello, world!'));
 app.use('/api/users', usersRoute);
 app.use('/api/blogs', blogsRoute);
 app.use('/api/posts', postsRoute);
-
 app.use('/api/auth', authRoute);
 app.use('/api/comments', commentsRoute);
 app.use('/api/security/devices', activeDeviceSissionsRoute);

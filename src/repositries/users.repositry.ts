@@ -1,9 +1,16 @@
 import { CommandRepo, QueryRepo } from './base.repositry';
 import { User, UserModelType } from '../types/types';
 import { UserModel } from '../db/collections/users.collection';
+import { ObjectId } from 'mongoose';
 
 class UsersCommandRepo extends CommandRepo<UserModelType, User> {}
 export const usersCommandRepo =  new UsersCommandRepo(UserModel);
+
+const baseUserExludeFields = {
+    confirmedInfo: 0, 
+    password: 0, 
+    updatedAt: 0,
+};
 
 class UsersQueryRepo extends QueryRepo<UserModelType> {
     async find(
@@ -22,19 +29,19 @@ class UsersQueryRepo extends QueryRepo<UserModelType> {
             if (!prepareFilters.$or) prepareFilters.$or = [];
             prepareFilters.$or.push({ email: { $regex: filters.searchEmailTerm, $options: "i" } });
         }
-        return await super.find(pageSize, pageNumber, sortBy, sortDirection, prepareFilters, { confirmedInfo: 0 });
+        return await super.find(pageSize, pageNumber, sortBy, sortDirection, prepareFilters, baseUserExludeFields);
     }
     async findUserByEmail(email: string) {
-        return await UserModel.findOne({ email }, { projection: { _id: 0 } })
+        return await UserModel.findOne({ email }, { projection: baseUserExludeFields })
     }
     async findUserByLogin(login: string) {
-        return await UserModel.findOne({ login }, { projection: { _id: 0 } })
+        return await UserModel.findOne({ login }, { projection: baseUserExludeFields })
     }
     async findNoActUserByConfirmedCode(code: string) {
-        return await UserModel.findOne({ 'confirmedInfo.code': code, 'confirmedInfo.isConfirmedEmail': false }, { projection: { _id: 0 } })
+        return await UserModel.findOne({ 'confirmedInfo.code': code, 'confirmedInfo.isConfirmedEmail': false }, { projection: baseUserExludeFields })
     }
-    async findById(id: string) {
-        return await UserModel.findById(id, { confirmedInfo: 0 });
+    async findById(id: ObjectId) {
+        return await super.findById(id, baseUserExludeFields);
     }
 }
 

@@ -41,7 +41,7 @@ router.get('/:postId/comments', async (req: Request<{ postId?: string}, {}, {}, 
 
 router.post('/',  authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const id = await postsDomain.create(req.body);
-    const result = await postQueryRepo.findById(id);
+    const result = await postQueryRepo.findById(id.toString());
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 
@@ -58,6 +58,7 @@ router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, vali
             userLogin: req.context.user?.login
         }
     });
+    // @ts-ignore
     const result = await commentsQueryRepo.findById(createdId);
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });

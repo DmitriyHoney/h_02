@@ -6,8 +6,8 @@ export const VALIDATION_ERROR_MSG = {
     IS_URL: 'Field must be an url',
     OUT_OF_RANGE: 'Field is out of range',
     BLOG_ID_NOT_FOUND: 'Blog with blogId not found',
-    LOGIN_NOT_VALID_TEMPLATE: 'Not valid pattern login, must be ^[a-zA-Z0-9_-]*$',
-    EMAIL_NOT_VALID_TEMPLATE: 'Not valid pattern email, must be ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    LOGIN_NOT_VALID_TEMPLATE: 'Not valid pattern login',
+    EMAIL_NOT_VALID_TEMPLATE: 'Not valid pattern email',
     EMAIL_OR_PASSWORD_NOT_VALID: 'Email or password not valid',
     USER_THIS_EMAIL_EXIST: 'User this email already exist',
     USER_THIS_LOGIN_EXIST: 'User this login already exist',
@@ -40,8 +40,8 @@ export type PaginationSortingType<I> = {
 }
 
 export type BaseDbEntity = {
-    createdAt: NativeDate,
-    updatedAt: NativeDate, 
+    createdAt: Date,
+    updatedAt: Date, 
 };
 
 export type Blog = {
@@ -102,9 +102,17 @@ export type DeviceActiveSessions = {
     _userId: string | number,
 }
 
+export type Pwd = {
+    code: string,
+    expiredDate: string,
+    email: string,
+    isActive: Boolean,
+}
 
-export type DeviceActiveSessionsModel = BaseDbEntity & DeviceActiveSessions;
-export type BlogModel = BaseDbEntity & Blog;
-export type PostModel = BaseDbEntity & Post;
+
+export type DeviceActiveSessionsModelType = BaseDbEntity & DeviceActiveSessions;
+export type BlogModelType = BaseDbEntity & Blog;
+export type PostModelType = BaseDbEntity & Post;
+export type PwdModelType = BaseDbEntity & Pwd;
 export type UserModelType = BaseDbEntity & User;
-export type CommentModel = BaseDbEntity & Comment;
+export type CommentModelType = BaseDbEntity & Comment;

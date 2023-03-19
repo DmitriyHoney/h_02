@@ -51,6 +51,7 @@ router.post('/:blogId/posts', authMiddleware, ...validatorMiddlewarePosts, valid
         ...req.body,
         blogId: req.params.blogId,
     });
+    // @ts-ignore
     const result = await postQueryRepo.findById(id);
     if (!result) {
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
@@ -61,6 +62,7 @@ router.post('/:blogId/posts', authMiddleware, ...validatorMiddlewarePosts, valid
 
 router.post('/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const id = await blogsDomain.create(req.body);
+    // @ts-ignore
     const result = await blogsQueryRepo.findById(id);
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });

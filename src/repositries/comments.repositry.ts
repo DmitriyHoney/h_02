@@ -1,10 +1,13 @@
 import { CommandRepo, QueryRepo } from './base.repositry';
-import { CommentModel, Comment } from '../types/types';
+import { CommentModelType, Comment } from '../types/types';
+import { CommentModel } from '../db/collections/comments.collection';
 
-class CommentsCommandRepo extends CommandRepo<CommentModel, Comment> {}
-export const commentsCommandRepo =  new CommentsCommandRepo('comments');
+class CommentsCommandRepo extends CommandRepo<CommentModelType, Comment> {}
 
-class CommentsQueryRepo extends QueryRepo<CommentModel> {
+// @ts-ignore
+export const commentsCommandRepo =  new CommentsCommandRepo(CommentModel);
+
+class CommentsQueryRepo extends QueryRepo<CommentModelType> {
     async find(
         pageSize?: string, 
         pageNumber?: string,
@@ -20,4 +23,5 @@ class CommentsQueryRepo extends QueryRepo<CommentModel> {
         return await super.findById(id, { postId: 0 });
     }
 }
-export const commentsQueryRepo = new CommentsQueryRepo('comments');
+// @ts-ignore
+export const commentsQueryRepo = new CommentsQueryRepo(CommentModel);

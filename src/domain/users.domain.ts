@@ -1,4 +1,3 @@
-import { hashPassword } from '../helpers';
 import { usersCommandRepo, usersQueryRepo } from '../repositries/users.repositry';
 import { User, VALIDATION_ERROR_MSG } from '../types/types';
 
@@ -9,10 +8,8 @@ export default {
         
         const isExistUserThisLogin = await usersQueryRepo.findUserByLogin(body.login);
         if (isExistUserThisLogin) throw new Error(VALIDATION_ERROR_MSG.USER_THIS_LOGIN_EXIST);
-
         try {
-            const hashedPwd = await hashPassword(body.password);
-            return await usersCommandRepo.create({ ...body, password: hashedPwd });
+            return await usersCommandRepo.create(body);
         } catch (e) {
             throw new Error((e as Error).message);
         }

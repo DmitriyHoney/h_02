@@ -1,5 +1,5 @@
 import { WithId, Collection } from 'mongodb';
-import mongoose, { IfAny, Document, Require_id } from 'mongoose';
+import mongoose, { IfAny, Document, Require_id, ObjectId } from 'mongoose';
 import { PaginationSortingType } from '../types/types';
 
 interface GenericRepoCommandLayerFn<Payload> {
@@ -14,17 +14,18 @@ export class CommandRepo<I, P> implements GenericRepoCommandLayerFn<P> {
     constructor(collection: mongoose.Model<I>) {
         this.collection = collection;
     }
+    // @ts-ignore
     async create(payload: P) {
         const res = await this.collection.create(payload);
-        return String(res.id);
+        return res._id;
     }
-    async update(id: string, payload: P) {
+    async update(_id: string, payload: P) {
         // @ts-ignore
-        const result = await this.collection.updateOne({ id }, { $set: payload });
+        const result = await this.collection.updateOne({ _id }, { $set: payload });
         return result.matchedCount === 1
     }
-    async delete(id: string) {
-        const result = await this.collection.deleteOne({ id });
+    async delete(_id: string) {
+        const result = await this.collection.deleteOne({ _id });
         return result.deletedCount === 1;
     }
     async _deleteAll() {
@@ -46,7 +47,7 @@ interface GenericRepoQueryLayerFn<ItemType> {
         filters?: object,
         excludeFields?: object,
     ) => Promise<IfAny<ItemType, any, Document<unknown, {}, ItemType> & Omit<Require_id<ItemType>, never>>[]>
-    findById: (id: string, excludeFields: object) => Promise<IfAny<ItemType, any, Document<unknown, {}, ItemType> & Omit<Require_id<ItemType>, never>> | null>
+    findById: (id: ObjectId, excludeFields: object) => Promise<IfAny<ItemType, any, Document<unknown, {}, ItemType> & Omit<Require_id<ItemType>, never>> | null>
 }
 
 type ReturnedQueryGetAll<I> = PaginationSortingType<WithId<PaginationSortingType<I> & Document>>;
@@ -68,7 +69,8 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
         const skip = +pageSize * (+pageNumber - 1);
 
         const payload: any = [
-            { $project: { 'id': '$login', password: 0, ...excludeFields } },
+            { $addFields: { id: "$_id"} },
+            { $project: { _id: 0, __v: 0, ...excludeFields, updatedAt: 0  } },
             { 
                 $facet: {
                     items: [{ $skip: skip }, { $limit: +pageSize }],
@@ -90,9 +92,9 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
         return new Promise((resolve: (value: ReturnedQueryGetAll<I>) => void) => resolve(result));
     }
     async findAll(filters: object = {}, excludeFields: object = {}) {
-        return this.collection.find({ ...filters }, { projection: { _id: 0, password: 0, ...excludeFields } });
+        return this.collection.find({ ...filters }, { ...excludeFields, updatedAt: 0  });
     }
-    async findById(id: string, excludeFields: object = {}) {
-        return await this.collection.findOne({ id }, { projection: { _id: 0, password: 0, ...excludeFields } })
+    async findById(_id: ObjectId | string, excludeFields: object = {}) {
+        return await this.collection.findOne({ _id }, { ...excludeFields, updatedAt: 0  })
     }
 }

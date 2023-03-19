@@ -1,25 +1,27 @@
 import { CommandRepo, QueryRepo } from './base.repositry';
-import { DeviceActiveSessionsModel, DeviceActiveSessions } from '../types/types';
-import { collection } from '../db';
+import { DeviceActiveSessionsModelType, DeviceActiveSessions } from '../types/types';
+import { SessionModel } from '../db/collections/sessions.collection';
 
-class DeviceActiveSessionsCommandRepo extends CommandRepo<DeviceActiveSessionsModel, DeviceActiveSessions> {
+class DeviceActiveSessionsCommandRepo extends CommandRepo<DeviceActiveSessionsModelType, DeviceActiveSessions> {
     async deleteAllByUserId(userId: string, excludeItemId: string) {
-        const result = await collection<DeviceActiveSessionsModel>(this.collectionName).deleteMany({ _userId: userId, id: { $ne: excludeItemId } });
+        const result = await SessionModel.deleteMany({ _userId: userId, id: { $ne: excludeItemId } });
         return result.deletedCount > 0;
     }
 }
-export const deviceActiveSessionsCommandRepo = new DeviceActiveSessionsCommandRepo('active_device_sessions');
+// @ts-ignore
+export const deviceActiveSessionsCommandRepo = new DeviceActiveSessionsCommandRepo(SessionModel);
 
 
-class DeviceActiveSessionsQueryRepo extends QueryRepo<DeviceActiveSessionsModel> {
+class DeviceActiveSessionsQueryRepo extends QueryRepo<DeviceActiveSessionsModelType> {
     async findByIpAndDeviceId(ip: string, deviceId: string) {
-        return await collection<DeviceActiveSessionsModel>(this.collectionName).findOne({ ip, deviceId }, { projection: { _id: 0 } })
+        return await SessionModel.findOne({ ip, deviceId }, { projection: { _id: 0 } })
     }
     async findByDeviceId(deviceId: string) {
-        return await collection<DeviceActiveSessionsModel>(this.collectionName).findOne({ deviceId }, { projection: { _id: 0 } })
+        return await SessionModel.findOne({ deviceId }, { projection: { _id: 0 } })
     }
     async findAllByCurrentUser(userId: string | number) {
         return await super.findAll({ _userId: userId }, { _expirationDate: 0, _userId: 0, id: 0, createdAt: 0 });
     }
 }
-export const deviceActiveSessionsQueryRepo = new DeviceActiveSessionsQueryRepo('active_device_sessions');
+// @ts-ignore
+export const deviceActiveSessionsQueryRepo = new DeviceActiveSessionsQueryRepo(SessionModel);

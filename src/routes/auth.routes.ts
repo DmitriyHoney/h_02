@@ -1,15 +1,22 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { authMiddlewareJWT, authBody as validatorMiddleware, authRegistration, authRegistrationConfirm, authRegistrationResend, authCheckValidRefreshJWT, secureToManyRequests } from '../middlewares/auth.middleware';
+import { 
+    authMiddlewareJWT, 
+    authBody as validatorMiddleware, 
+    authRegistration, authRegistrationConfirm, authRegistrationResend, 
+    authCheckValidRefreshJWT, secureToManyRequests, newPassAuthBody
+} from '../middlewares/auth.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
-import { HTTP_STATUSES, ValidationErrors, VALIDATION_ERROR_MSG } from '../types/types';
+import { HTTP_STATUSES, ValidationErrors, VALIDATION_ERROR_MSG, Pwd } from '../types/types';
 import authDomain from '../domain/auth.domain';
 import { jwtService } from '../helpers/jwt-service';
 import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry';
 import { emailManager } from '../managers/email.manager';
-import { generateExpiredDate, generateUUID, getUserIp } from '../helpers';
+import { generateExpiredDate, generateUUID, getUserIp, hashPassword } from '../helpers';
 import usersDomain from '../domain/users.domain';
 import DeviceActiveSessionsDomain from '../domain/activeDeviceSessions.domain';
 import { deviceActiveSessionsQueryRepo } from '../repositries/activeDeviceSessions.repositry';
+import pwdDomain from '../domain/pwd.domain';
+import { pwdQueryRepo, pwdCommandRepo } from '../repositries/pwd.repositry';
 
 const router = Router();
 
@@ -31,6 +38,68 @@ router.post('/registration', ...authRegistration, secureToManyRequests, validato
             : res.status(HTTP_STATUSES.BAD_REQUEST_400).send(errMsg);
     }
 });
+
+router.post('/password-recovery', ...authRegistrationResend, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    const confirmedInfo: Pwd = { 
+        code: generateUUID(), expiredDate: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(), email: req.body.email, isActive: true,
+    };
+    try {
+        pwdDomain.create(confirmedInfo);
+        await emailManager.sendRecoverPassCodeConfirm(req.body.email, confirmedInfo.code);
+        res.status(204).send();
+    } catch (e) {
+        return res.status(HTTP_STATUSES.BAD_REQUEST_400).send({});
+    }
+});
+
+router.post('/new-password', ...newPassAuthBody, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    try {
+        const codeInDb = await pwdQueryRepo.findByCode(req.body.recoveryCode);
+        
+        if (!codeInDb) {
+            return res.status(HTTP_STATUSES.BAD_REQUEST_400).send({
+                errorsMessages: [
+                    { field: 'recoveryCode', message: 'Incorrect recoveryCode'}
+                ]
+            } as ValidationErrors);
+        }
+        if (codeInDb.isActive) {
+            return res.status(HTTP_STATUSES.BAD_REQUEST_400).send({
+                errorsMessages: [
+                    { field: 'recoveryCode', message: 'Code already in use'}
+                ]
+            } as ValidationErrors);
+        }
+        const isCodeValid = pwdDomain.isCodeConfirmationValid(codeInDb.expiredDate);
+        if (!isCodeValid) {
+            return res.status(HTTP_STATUSES.BAD_REQUEST_400).send({
+                errorsMessages: [
+                    { field: 'recoveryCode', message: 'RecoveryCode is expired'}
+                ]
+            } as ValidationErrors);
+        }
+        const user = await usersQueryRepo.findUserByEmail(codeInDb.email);
+        const password = await hashPassword(req.body.newPassword);
+        const userUpdated = { password };
+        // @ts-ignore
+        await usersDomain.update(user?.id, userUpdated);
+        await pwdCommandRepo.update(codeInDb.id, { ...codeInDb, isActive: false });
+        return res.status(HTTP_STATUSES.NO_CONTENT_204).send({});
+    } catch (e) {
+        return res.status(HTTP_STATUSES.BAD_REQUEST_400).send({});
+    }
+});
+
+router.post('/password-recovery', ...authRegistrationResend, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    const code = generateUUID();
+    try {
+        await emailManager.sendRecoverPassCodeConfirm(req.body.email, code);
+        res.status(204).send();
+    } catch (e) {
+        return res.status(HTTP_STATUSES.BAD_REQUEST_400).send({});
+    }
+});
+
 
 router.post('/registration-confirmation', ...authRegistrationConfirm, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const errorsCodeAlreadyActivatedOrExpired: ValidationErrors = {
@@ -136,7 +205,7 @@ router.post('/refresh-token', authCheckValidRefreshJWT, async (req: Request, res
     if (!user) return res.status(401).send();
 
     console.log('tokenItem', tokenItem);
-
+    // @ts-ignore
     await DeviceActiveSessionsDomain.update(tokenItem.id, { 
         ...tokenItem, 
         lastActiveDate: new Date().toISOString(),
@@ -144,6 +213,7 @@ router.post('/refresh-token', authCheckValidRefreshJWT, async (req: Request, res
     });
 
     const newAccessToken = jwtService.createJWT(user, '30m');
+    // @ts-ignore
     const newRefreshToken = jwtService.createJWT(user, '60m', tokenItem.deviceId);
 
     res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true });
@@ -152,6 +222,7 @@ router.post('/refresh-token', authCheckValidRefreshJWT, async (req: Request, res
 
 router.get('/me', authMiddlewareJWT, async (req: Request, res: Response) => {
     if (!req.context?.user) return res.status(401).send();
+    // @ts-ignore
     res.status(200).send(userMappersQuery.authMe(req.context.user));
 });
 

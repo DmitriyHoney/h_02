@@ -9,6 +9,21 @@ const users = {
   admin: 'qwerty',
 }
 
+export const newPassAuthBody = [
+  body('recoveryCode')
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
+    .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()
+    .trim()
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail(),
+  body('newPassword')
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
+    .isString().withMessage(VALIDATION_ERROR_MSG.IS_STRING).bail()
+    .trim()
+    .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
+    .isLength({ min: 6, max: 20 }).withMessage(VALIDATION_ERROR_MSG.OUT_OF_RANGE),
+];
+
+
 export const authBody = [
   body('loginOrEmail')
     .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()

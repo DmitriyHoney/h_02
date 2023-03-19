@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const postSchema = new mongoose.Schema({
+const commentSchema = new mongoose.Schema({
     title: String,
     shortDescription: String,
     content: String,
@@ -8,7 +8,7 @@ const postSchema = new mongoose.Schema({
     blogName: { type: String, require: false },
 }, { timestamps: true });
 
-postSchema.method('toJSON', function() {
+commentSchema.method('toJSON', function() {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;
     delete object._id;
@@ -16,4 +16,4 @@ postSchema.method('toJSON', function() {
     return object;
 });
 
-export const PostModel = mongoose.model('Post', postSchema);
+export const CommentModel = mongoose.model('Comment', commentSchema);

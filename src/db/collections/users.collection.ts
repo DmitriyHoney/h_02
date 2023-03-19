@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
-import { isEmail, isLogin } from '../../helpers';
+import { hashPassword, isEmail, isLogin } from '../../helpers';
 import { VALIDATION_ERROR_MSG } from '../../types/types';
 const { Schema } = mongoose;
 
+// @ts-ignore
 const userSchema = new Schema({
     login: {
         type: String,
@@ -15,7 +16,7 @@ const userSchema = new Schema({
             validator: function(v: string) {
                 return isLogin(v);
             },
-            message: (props: any) => VALIDATION_ERROR_MSG.LOGIN_NOT_VALID_TEMPLATE
+            message: () => VALIDATION_ERROR_MSG.LOGIN_NOT_VALID_TEMPLATE
         },
     },
     email: {
@@ -27,13 +28,19 @@ const userSchema = new Schema({
             validator: function(v: string) {
                 return isEmail(v);
             },
-            message: (props: any) => VALIDATION_ERROR_MSG.EMAIL_NOT_VALID_TEMPLATE
+            message: () => VALIDATION_ERROR_MSG.EMAIL_NOT_VALID_TEMPLATE
         },
     },
     password: {
         type: String,
         required: true,
         trim: true,
+        validate: {
+            validator: function(v: string) {
+                return v.length >= 8;
+            },
+            message: () => VALIDATION_ERROR_MSG.OUT_OF_RANGE
+        },
     },
     confirmedInfo: {
         isConfirmedEmail: { type: Boolean, default: false },
@@ -42,13 +49,22 @@ const userSchema = new Schema({
     }
 }, { timestamps: true });
 
-userSchema.set('toJSON', {
-    virtuals: true,
-    transform: (doc, ret) => {
-        ret.id = ret._id.toString();
-        delete ret._id;
-        delete ret.__v;
-    },
+userSchema.method('toJSON', function() {
+    const { __v, _id, ...object } = this.toObject();
+    object.id = _id;
+    delete object._id;
+    delete object.__v;
+    return object;
 });
-
+userSchema.pre('save', async function(next) {
+    console.log(1111);
+    if (!this.isNew && !this.isModified('password')) return next();
+    try {
+        const hash = await hashPassword(this.password);
+        this.password = hash;
+        return next();
+    } catch {
+        return next();
+    }
+});
 export const UserModel = mongoose.model('User', userSchema);

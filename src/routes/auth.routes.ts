@@ -11,7 +11,7 @@ import authDomain from '../domain/auth.domain';
 import { jwtService } from '../helpers/jwt-service';
 import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry';
 import { emailManager } from '../managers/email.manager';
-import { generateExpiredDate, generateUUID, getUserIp, hashPassword } from '../helpers';
+import { comparePasswords, generateExpiredDate, generateUUID, getUserIp, hashPassword } from '../helpers';
 import usersDomain from '../domain/users.domain';
 import DeviceActiveSessionsDomain from '../domain/activeDeviceSessions.domain';
 import { deviceActiveSessionsQueryRepo } from '../repositries/activeDeviceSessions.repositry';
@@ -39,7 +39,7 @@ router.post('/registration', ...authRegistration, secureToManyRequests, validato
     }
 });
 
-router.post('/password-recovery', ...authRegistrationResend, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.post('/password-recovery', authCheckValidRefreshJWT, ...authRegistrationResend, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const confirmedInfo: Pwd = { 
         code: generateUUID(), expiredDate: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(), email: req.body.email, isActive: false,
     };
@@ -115,6 +115,7 @@ router.post('/registration-confirmation', ...authRegistrationConfirm, secureToMa
     
     const isCodeValid = authDomain.isCodeConfirmationValid(req.body.code, user);
     if (!isCodeValid) return res.status(400).send(errorsCodeNotValid);
+    // @ts-ignore
     const isWasUpdated = await usersDomain.update(user.id, { 
         ...user, 
         confirmedInfo: { code: '', codeExpired: '', isConfirmedEmail: true }
@@ -135,6 +136,7 @@ router.post('/registration-email-resending', ...authRegistrationResend, secureTo
     if (user.confirmedInfo?.isConfirmedEmail) return res.status(400).send(errorsEmailAlreadyConfirmed);
     try {
         const confirmedCode = generateUUID();
+        // @ts-ignore
         await usersDomain.update(user.id, {
             ...user,
             confirmedInfo: {
@@ -157,7 +159,9 @@ router.post('/login', ...validatorMiddleware, secureToManyRequests, validatorsEr
         if (!user) return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
 
         const deviceId = generateUUID();
+        // @ts-ignore
         const accessToken = jwtService.createJWT(user, '30m');
+        // @ts-ignore
         const refreshToken = jwtService.createJWT(user, '60m', deviceId);
         
         const ip = getUserIp(req);

@@ -3,6 +3,7 @@ import { validatorsErrorsMiddleware } from '../middlewares';
 import { BaseGetQueryParams, HTTP_STATUSES, VALIDATION_ERROR_MSG, ValidationErrors } from '../types/types';
 import { usersQueryRepo } from '../repositries/users.repositry';
 import usersDomain from '../domain/users.domain';
+import { createUsersBody as validatorMiddleware } from '../middlewares/users.middleware';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -15,34 +16,26 @@ router.get('/', authMiddleware, async (req: Request<{}, {}, {}, GetAllUsersQuery
     res.send(result);
 });
 
-router.post('/', authMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.post('/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     try {
         const id = await usersDomain.create(req.body);
         // @ts-ignore
         const result = await usersQueryRepo.findById(id);
         res.status(HTTP_STATUSES.CREATED_201).send(result);
     } catch (e) {
-        const errorMsg = (e as Error).message;
-        if ([VALIDATION_ERROR_MSG.USER_THIS_EMAIL_EXIST, VALIDATION_ERROR_MSG.USER_THIS_LOGIN_EXIST].includes(errorMsg)) {
-            return res.status(HTTP_STATUSES.BAD_REQUEST_400).send({
+        const userExistErrors = [VALIDATION_ERROR_MSG.USER_THIS_EMAIL_EXIST, VALIDATION_ERROR_MSG.USER_THIS_LOGIN_EXIST];
+        const errMsg = (e as Error).message;
+        if (userExistErrors.includes(errMsg)) {
+            const errorField = errMsg.indexOf('login') >= 0 ? 'login' : 'email';
+            const resultErrors: ValidationErrors = {
                 errorsMessages: [
-                    {
-                        field: errorMsg.indexOf('email') >= 0 ? 'email' : 'login',
-                        message: errorMsg
-                    }
+                    { field: errorField, message: errMsg }
                 ]
-            });
+            }
+            res.status(HTTP_STATUSES.BAD_REQUEST_400).send(resultErrors);
+        } else {
+            res.status(HTTP_STATUSES.BAD_REQUEST_400).send(errMsg);
         }
-        try {
-            const errorsMessages = errorMsg.split(',').map((errTxt) => {
-                const lst = errTxt.split(':');
-                return lst.length > 2 ? { field: lst[1].trim(), message: lst[2].trim() } : { field: lst[0].trim(), message: lst[1].trim() }
-            });
-            res.status(HTTP_STATUSES.BAD_REQUEST_400).send({ errorsMessages })
-        } catch {
-            res.status(HTTP_STATUSES.SERVER_ERROR_500).send(errorMsg)
-        }
-        
     }
 });
 

@@ -156,7 +156,7 @@ router.post('/registration-email-resending', ...authRegistrationResend, secureTo
 router.post('/login', ...validatorMiddleware, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await authDomain.login(req.body);
-        if (!user) return res.status(HTTP_STATUSES.TOO_MANY_REQUESTS_429).send();
+        if (!user) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
 
         const deviceId = generateUUID();
         // @ts-ignore

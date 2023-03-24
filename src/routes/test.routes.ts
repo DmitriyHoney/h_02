@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import blogsDomain from '../domain/blogs.domain';
 import postsDomain from '../domain/posts.domain';
-import usersDomain from '../domain/users.domain';
+import { userDomain as usersDomain } from '../domain/users.domain';
 import commentsDomain from '../domain/comments.domain';
 import activeDeviceSessionsDomain from '../domain/activeDeviceSessions.domain';
 import { HTTP_STATUSES } from '../types/types';

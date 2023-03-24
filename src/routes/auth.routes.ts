@@ -12,7 +12,7 @@ import { jwtService } from '../helpers/jwt-service';
 import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry';
 import { emailManager } from '../managers/email.manager';
 import { generateExpiredDate, generateUUID, getUserIp, hashPassword } from '../helpers';
-import usersDomain from '../domain/users.domain';
+import { userDomain as usersDomain } from '../domain/users.domain';
 import DeviceActiveSessionsDomain from '../domain/activeDeviceSessions.domain';
 import { deviceActiveSessionsQueryRepo } from '../repositries/activeDeviceSessions.repositry';
 import pwdDomain from '../domain/pwd.domain';

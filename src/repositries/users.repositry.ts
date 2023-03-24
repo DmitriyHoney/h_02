@@ -3,7 +3,7 @@ import { User, UserModelType } from '../types/types';
 import { UserModel } from '../db/collections/users.collection';
 import { ObjectId } from 'mongoose';
 
-class UsersCommandRepo extends CommandRepo<UserModelType, User> {}
+export class UsersCommandRepo extends CommandRepo<UserModelType, User> {}
 // @ts-ignore
 export const usersCommandRepo =  new UsersCommandRepo(UserModel);
 
@@ -13,7 +13,7 @@ const baseUserExludeFields = {
     updatedAt: 0,
 };
 
-class UsersQueryRepo extends QueryRepo<UserModelType> {
+export class UsersQueryRepo extends QueryRepo<UserModelType> {
     async find(
         pageSize?: string, 
         pageNumber?: string,

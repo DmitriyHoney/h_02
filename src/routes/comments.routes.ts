@@ -1,56 +1,24 @@
-import { Router, Request, Response } from 'express';
-import { createCommentsBody as validatorMiddleware } from '../middlewares/comments.middleware';
+import { Router } from 'express';
+import {createCommentsBody as validatorMiddleware, likeCommentsBody} from '../middlewares/comments.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
-import { BaseGetQueryParams, HTTP_STATUSES } from '../types/types';
-import { commentsQueryRepo } from '../repositries/comments.repositry';
 import { authMiddlewareJWT } from '../middlewares/auth.middleware';
-import commentsDomain from '../domain/comments.domain';
+import {commentsControllers} from "../controllers/comments.controllers";
 
 const router = Router();
 
-router.get('/', async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Response) => {
-    const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
-    const result = await commentsQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection);
-    res.send(result);
-});
+router.get('/', authMiddlewareJWT, commentsControllers.getAll.bind(commentsControllers));
+router.get('/:id/', authMiddlewareJWT, commentsControllers.getOne.bind(commentsControllers));
+router.put(
+    '/:id/',
+    authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsMiddleware,
+    commentsControllers.update.bind(commentsControllers)
+);
+router.put(
+    '/:id/like-status',
+    authMiddlewareJWT, ...likeCommentsBody, validatorsErrorsMiddleware,
+    commentsControllers.likeUnlikeComment.bind(commentsControllers)
+);
+router.delete('/:id/', authMiddlewareJWT, commentsControllers.update.bind(commentsControllers));
 
-router.get('/:id/', async (req: Request, res: Response) => {
-    const result = await commentsQueryRepo.findById(req.params.id);
-    if (!result) {
-        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
-        return;
-    }
-    res.status(HTTP_STATUSES.OK_200).send(result);
-});
-
-router.put('/:id/', authMiddlewareJWT, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
-    // @ts-ignore
-    const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
-    if (isCommentOwnUser === HTTP_STATUSES.NOT_FOUND_404) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
-    if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();
-
-    const isUpdated = await commentsDomain.update(req.params.id, req.body);
-    isUpdated 
-        ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()
-        : res.status(HTTP_STATUSES.NOT_FOUND_404).send();
-});
-
-router.delete('/:id/', authMiddlewareJWT, async (req: Request, res: Response) => {
-    // @ts-ignore
-    const isCommentOwnUser = await checkCommentOwnUser(req.params.id, req?.context?.user?.id);
-    if (isCommentOwnUser === HTTP_STATUSES.NOT_FOUND_404) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
-    if (!isCommentOwnUser) return res.status(HTTP_STATUSES.FORBIDDEN_403).send();
-
-    const isDeleted = await commentsDomain.deleteOne(req.params.id);
-    return isDeleted
-        ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()
-        : res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
-});
-
-async function checkCommentOwnUser(commentId: string, userId: string | undefined) {
-    const row = await commentsQueryRepo.findById(commentId);
-    if (!row) return HTTP_STATUSES.NOT_FOUND_404;
-    return row?.commentatorInfo?.userId === userId;
-}
 
 export default router;

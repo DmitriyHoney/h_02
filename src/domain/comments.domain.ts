@@ -1,21 +1,32 @@
 import { commentsCommandRepo, commentsQueryRepo } from '../repositries/comments.repositry';
 import { Comment, HTTP_STATUSES, UserModelType } from '../types/types';
+import {UserDomain} from "./users.domain";
+import { CommentsQueryRepo, CommentsCommandRepo } from "../repositries/comments.repositry";
 
-export default {
-    create: async (body: Comment) => {
-        const res = await commentsCommandRepo.create({ 
-            content: body.content, 
+
+export class CommentDomain {
+    constructor(
+        public commentsQueryRepo: CommentsQueryRepo,
+        public commentsCommandRepo: CommentsCommandRepo,
+    ) {
+        this.commentsQueryRepo = commentsQueryRepo;
+        this.commentsCommandRepo = commentsCommandRepo;
+    }
+    async create(body: Comment) {
+        const res = await this.commentsCommandRepo.create({
+            content: body.content,
             commentatorInfo: body.commentatorInfo,
             postId: body.postId,
         });
         return res;
-    },
-    update: async (id: string, body: Comment) => {
-        return await commentsCommandRepo.update(id, {
-            content: body.content,
-            postId: body.postId
-        });
-    },
-    deleteOne: async (id: string) => await commentsCommandRepo.delete(id),
-    deleteAll: async () => await commentsCommandRepo._deleteAll()
-};
+    }
+    async update(id: string, body: Comment) {
+        return await commentsCommandRepo.update(id, body);
+    }
+    async deleteOne(id: string) {
+        return await commentsCommandRepo.delete(id);
+    }
+    async deleteAll() {
+        return await commentsCommandRepo._deleteAll();
+    }
+}

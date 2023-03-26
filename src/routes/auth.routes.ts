@@ -12,11 +12,11 @@ import { jwtService } from '../helpers/jwt-service';
 import { userMappersQuery, usersQueryRepo } from '../repositries/users.repositry';
 import { emailManager } from '../managers/email.manager';
 import { generateExpiredDate, generateUUID, getUserIp, hashPassword } from '../helpers';
-import { userDomain as usersDomain } from '../domain/users.domain';
 import DeviceActiveSessionsDomain from '../domain/activeDeviceSessions.domain';
 import { deviceActiveSessionsQueryRepo } from '../repositries/activeDeviceSessions.repositry';
 import pwdDomain from '../domain/pwd.domain';
 import { pwdQueryRepo, pwdCommandRepo } from '../repositries/pwd.repositry';
+import {userDomain} from "../controllers/users.controllers";
 
 const router = Router();
 
@@ -25,7 +25,7 @@ router.post('/registration', ...authRegistration, secureToManyRequests, validato
         code: generateUUID(), codeExpired: generateExpiredDate({ hours: 1, min: 0, sec: 0 }).toISOString(), isConfirmedEmail: false 
     };
     try {
-        await usersDomain.create({ ...req.body, confirmedInfo });
+        await userDomain.create({ ...req.body, confirmedInfo });
         await emailManager.sendRegCodeConfirm(req.body.email, confirmedInfo.code);
         res.status(204).send();
     } catch (e) {

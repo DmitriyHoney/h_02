@@ -7,7 +7,7 @@ import postsDomain from '../domain/posts.domain';
 import { postQueryRepo } from '../repositries/posts.repositry';
 import { authMiddleware, authMiddlewareJWT } from '../middlewares/auth.middleware';
 import { commentsQueryRepo } from '../repositries/comments.repositry';
-import commentsDomain from '../domain/comments.domain';
+import { commentsDomain } from "../controllers/comments.controllers";
 
 const router = Router();
 
@@ -27,13 +27,13 @@ router.get('/:id/', async (req: Request, res: Response) => {
 });
 
 
-router.get('/:postId/comments', async (req: Request<{ postId?: string}, {}, {}, BaseGetQueryParams>, res: Response) => {
+router.get('/:postId/comments', authMiddlewareJWT, async (req: Request<{ postId?: string}, {}, {}, BaseGetQueryParams>, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
 
     const isPostExist = await postQueryRepo.findById(req.params.postId || 'undefined');
     if (!isPostExist) return res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
-    
-    const result = await commentsQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { postId: req.params.postId });
+    // @ts-ignore
+    const result = await commentsQueryRepo.find(req.context.user.login, pageSize, pageNumber, sortBy, sortDirection, { postId: req.params.postId });
     if (!result) return res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
 
     res.status(HTTP_STATUSES.OK_200).send(result);

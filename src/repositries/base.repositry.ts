@@ -65,11 +65,12 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
         filters: object = {},
 
         excludeFields: object = {},
+        addFields: object = {},
     ) {
         const skip = +pageSize * (+pageNumber - 1);
 
         const payload: any = [
-            { $addFields: { id: "$_id"} },
+            { $addFields: { id: "$_id", ...addFields } },
             { $project: { _id: 0, __v: 0, ...excludeFields, updatedAt: 0  } },
             { 
                 $facet: {

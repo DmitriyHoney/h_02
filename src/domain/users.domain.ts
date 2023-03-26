@@ -1,4 +1,4 @@
-import { UsersCommandRepo, UsersQueryRepo, usersQueryRepo, usersCommandRepo } from '../repositries/users.repositry'; //usersQueryRepo, usersCommandRepo
+import { UsersCommandRepo, UsersQueryRepo } from '../repositries/users.repositry'; //usersQueryRepo, usersCommandRepo
 import { User, VALIDATION_ERROR_MSG } from '../types/types'; 
 
 export class UserDomain {
@@ -32,5 +32,3 @@ export class UserDomain {
         return await this.usersCommandRepo._deleteAll();
     }
 }
-
-export const userDomain = new UserDomain(usersQueryRepo, usersCommandRepo);

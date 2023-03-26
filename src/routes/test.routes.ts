@@ -1,17 +1,17 @@
 import { Router } from 'express';
 import blogsDomain from '../domain/blogs.domain';
 import postsDomain from '../domain/posts.domain';
-import { userDomain as usersDomain } from '../domain/users.domain';
-import commentsDomain from '../domain/comments.domain';
 import activeDeviceSessionsDomain from '../domain/activeDeviceSessions.domain';
 import { HTTP_STATUSES } from '../types/types';
+import { userDomain } from "../controllers/users.controllers";
+import { commentsDomain } from "../controllers/comments.controllers";
 const router = Router();
 
 router.delete('/', (req, res) => {
     Promise.all([
         blogsDomain.deleteAll(),
         postsDomain.deleteAll(),
-        usersDomain.deleteAll(),
+        userDomain.deleteAll(),
         commentsDomain.deleteAll(),
         activeDeviceSessionsDomain.deleteAll(),
     ]).then((result) => {

@@ -91,6 +91,14 @@ export type Comment = {
     content: string,
     postId: string,
     commentatorInfo?: CommentatorInfo,
+    likesInfo?: {
+        likesCount: number,
+        dislikesCount: number,
+        myStatus?: LikeStatus,
+        usersStatistics: {
+            [login: string]: string;
+        }
+    }
 }
 
 export type DeviceActiveSessions = {
@@ -109,6 +117,11 @@ export type Pwd = {
     isActive: Boolean,
 }
 
+export enum LikeStatus {
+    NONE = 'None',
+    LIKE = 'Like',
+    DISLIKE = 'Dislike',
+}
 
 export type DeviceActiveSessionsModelType = BaseDbEntity & DeviceActiveSessions;
 export type BlogModelType = BaseDbEntity & Blog;

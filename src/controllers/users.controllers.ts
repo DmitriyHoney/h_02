@@ -1,6 +1,7 @@
-import { userDomain, UserDomain } from "../domain/users.domain";
-import { Router, Request, Response } from 'express';
+import { UserDomain } from "../domain/users.domain";
+import { Request, Response } from 'express';
 import { BaseGetQueryParams, HTTP_STATUSES, VALIDATION_ERROR_MSG, ValidationErrors } from '../types/types';
+import {usersCommandRepo, usersQueryRepo} from "../repositries/users.repositry";
 
 type GetAllUsersQuery = { searchLoginTerm?: string, searchEmailTerm?: string } & BaseGetQueryParams;
 
@@ -47,4 +48,5 @@ class UserControllers {
     };
 }
 
+export const userDomain = new UserDomain(usersQueryRepo, usersCommandRepo);
 export const userControllers = new UserControllers(userDomain);

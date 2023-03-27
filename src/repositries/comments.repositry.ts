@@ -33,8 +33,8 @@ export class CommentsQueryRepo extends QueryRepo<CommentModelType> {
             ...res,
             // @ts-ignore
             items: res.items.map((i: CommentModelType) => {
-                const myStatus = i.likesInfo?.usersStatistics[userLogin]
-                    ? i.likesInfo?.usersStatistics[userLogin]
+                const myStatus = i?.likesInfo?.usersStatistics && i?.likesInfo?.usersStatistics[userLogin]
+                    ? i?.likesInfo?.usersStatistics[userLogin]
                     : 'None';
                 return {
                     ...i,

@@ -59,7 +59,7 @@ router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, vali
         }
     });
     // @ts-ignore
-    const result = await commentsQueryRepo.findById(createdId);
+    const result = await commentsQueryRepo.findById(req.context.user?.login, createdId);
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 

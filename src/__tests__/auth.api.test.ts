@@ -62,9 +62,9 @@ describe('/auth', () => {
         });
         test('must returned 400 status code and loginOrEmail is required', async () => {
             const result = await request(config.app).post(`${url}/login`)
-                .send({ password: '12312' })
+                .send({ password: '12345678' })
                 .expect(HTTP_STATUSES.BAD_REQUEST_400)
-                
+                console.log(1111, result.body.errorsMessages)
                 expect(result.body.errorsMessages.length).toBe(1);
                 expect(result.body.errorsMessages[0]).toEqual({
                     message: VALIDATION_ERROR_MSG.REQUIRED,
@@ -90,7 +90,7 @@ describe('/auth', () => {
         });
         test('must returned 401 status code and loginOrEmail incorrect email', async () => {
             const result = await request(config.app).post(`${url}/login`)
-                .send({ loginOrEmail: 'test@12312mail.ru', password: '12312'})
+                .send({ loginOrEmail: 'test@12312mail.ru', password: '123456789'})
                 .expect(HTTP_STATUSES.NOT_AUTHORIZED_401)
         });
     });

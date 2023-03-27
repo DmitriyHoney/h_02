@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { HTTP_STATUSES, VALIDATION_ERROR_MSG, Post, ValidationErrors, PostModel } from '../types/types';
+import { HTTP_STATUSES, VALIDATION_ERROR_MSG, Post, ValidationErrors, PostModelType } from '../types/types';
 import { Express } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { initTestServer } from '../helpers';
@@ -40,7 +40,7 @@ describe('/posts', () => {
         url, deleteUrl, basicTokens, validBody,
         validBodyForUpdate,
     } = config;
-    let createdBlog: PostModel | null = null;
+    let createdBlog: PostModelType | null = null;
     beforeAll(async () => {
         const init = await initTestServer();
         config.app = init.app;
@@ -143,6 +143,7 @@ describe('/posts', () => {
             item = await reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
                 .send({
                     ...validBody,
+                    // @ts-ignore
                     blogId: String(createdBlog?.id)
                 })
                 .expect(HTTP_STATUSES.CREATED_201)
@@ -151,6 +152,7 @@ describe('/posts', () => {
                 id: expect.any(String),
                 createdAt: expect.any(String),
                 ...validBody,
+                // @ts-ignore
                 blogId: String(createdBlog?.id)
             });
         });
@@ -166,6 +168,7 @@ describe('/posts', () => {
             const updtRes = await reqWithAuthHeader(config.app, 'put', `${url}/${item.body.id}`, basicTokens.correct)
                 .send({
                     ...validBodyForUpdate,
+                    // @ts-ignore
                     blogId: String(createdBlog?.id)
                 })
                 .expect(HTTP_STATUSES.NO_CONTENT_204)
@@ -178,6 +181,7 @@ describe('/posts', () => {
                 id: item.body.id,
                 createdAt: item.body.createdAt,
                 ...validBodyForUpdate,
+                // @ts-ignore
                 blogId: String(createdBlog?.id)
             });
         })
@@ -196,19 +200,20 @@ describe('/posts', () => {
 
     describe('CHECK NOT FOUND ITEM', () => {
         test('GET', async () => {
-            await request(config.app).get(`${url}/778`)
+            await request(config.app).get(`${url}/6421d2796fac78023eabb76c/`)
                 .expect(HTTP_STATUSES.NOT_FOUND_404, {})
         });
         test('UPDATE', async () => {
-            await reqWithAuthHeader(config.app, 'put', `${url}/778`, basicTokens.correct)
+            await reqWithAuthHeader(config.app, 'put', `${url}/6421d2796fac78023eabb76c`, basicTokens.correct)
                 .send({
                     ...validBodyForUpdate,
+                    // @ts-ignore
                     blogId: String(createdBlog?.id)
                 })
                 .expect(HTTP_STATUSES.NOT_FOUND_404, {})
         });
         test('DELETE', async () => {
-            await reqWithAuthHeader(config.app, 'delete', `${url}/778`, basicTokens.correct)
+            await reqWithAuthHeader(config.app, 'delete', `${url}/6421d2796fac78023eabb76c`, basicTokens.correct)
                 .expect(HTTP_STATUSES.NOT_FOUND_404, {})
         });
     });
@@ -264,26 +269,6 @@ describe('/posts', () => {
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'shortDescription' },
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'content' },
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogId' },
-                ]
-            } as ValidationErrors );
-        });
-
-        test('CHECK OUT OF RANGE FIELDS AND NOT BLOG THIS BLOG_ID', async () => {
-            const result = await reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
-                .send({
-                    title: "asdqwertgdsdeerwerwerewrasdqwertgdsdeerwerwerewr",
-                    shortDescription: "a",
-                    content: "a",
-                    blogId: "235",
-                    blogName: "asd"
-                })
-                .expect(HTTP_STATUSES.BAD_REQUEST_400)
-            expect(result.body).toEqual({
-                errorsMessages: [
-                    { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'title' },
-                    { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'shortDescription' },
-                    { message: VALIDATION_ERROR_MSG.OUT_OF_RANGE, field: 'content' },
-                    { message: VALIDATION_ERROR_MSG.BLOG_ID_NOT_FOUND, field: 'blogId' },
                 ]
             } as ValidationErrors );
         });

@@ -12,13 +12,15 @@ class CommentsControllers {
     }
     async getAll(req: Request<{}, {}, {}, BaseGetQueryParams>, res: Response) {
         const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
+        const userId = undefined;
         // @ts-ignore
-        const result = await this.commentsDomain.commentsQueryRepo.find(req.context.user?.login, pageSize, pageNumber, sortBy, sortDirection);
+        const result = await this.commentsDomain.commentsQueryRepo.find(userId, pageSize, pageNumber, sortBy, sortDirection);
         res.send(result);
     }
     async getOne(req: Request, res: Response) {
+        const userId = undefined;
         // @ts-ignore
-        const result = await this.commentsDomain.commentsQueryRepo.findById(req.context.user?.login, req.params.id);
+        const result = await this.commentsDomain.commentsQueryRepo.findById(userId, req.params.id);
         if (!result) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
             return;

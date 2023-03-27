@@ -175,16 +175,16 @@ describe('/blogs', () => {
 
     describe('CHECK NOT FOUND ITEM', () => {
         test('GET', async () => {
-            await request(config.app).get(`${url}/778`)
+            await request(config.app).get(`${url}/6421d2796fac78023eabb76c`)
                 .expect(HTTP_STATUSES.NOT_FOUND_404, {})
         });
         test('UPDATE', async () => {
-            await reqWithAuthHeader(config.app, 'put', `${url}/778`, basicTokens.correct)
+            await reqWithAuthHeader(config.app, 'put', `${url}/6421d2796fac78023eabb76c`, basicTokens.correct)
                 .send(validBodyForUpdate)
                 .expect(HTTP_STATUSES.NOT_FOUND_404, {})
         });
         test('DELETE', async () => {
-            await reqWithAuthHeader(config.app, 'delete', `${url}/778`, basicTokens.correct)
+            await reqWithAuthHeader(config.app, 'delete', `${url}/6421d2796fac78023eabb76c`, basicTokens.correct)
                 .expect(HTTP_STATUSES.NOT_FOUND_404, {})
         });
     });

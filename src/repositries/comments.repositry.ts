@@ -10,7 +10,7 @@ export const commentsCommandRepo =  new CommentsCommandRepo(CommentModel);
 export class CommentsQueryRepo extends QueryRepo<CommentModelType> {
     // @ts-ignore
     async find(
-        userLogin: string,
+        userId: string | number | undefined,
         pageSize?: string,
         pageNumber?: string,
         sortBy?: string,
@@ -33,8 +33,8 @@ export class CommentsQueryRepo extends QueryRepo<CommentModelType> {
             ...res,
             // @ts-ignore
             items: res.items.map((i: CommentModelType) => {
-                const myStatus = i.likesInfo?.usersStatistics[userLogin]
-                    ? i.likesInfo?.usersStatistics[userLogin]
+                const myStatus = userId && i.likesInfo?.usersStatistics[userId]
+                    ? i.likesInfo?.usersStatistics[userId]
                     : 'None';
                 return {
                     ...i,
@@ -48,10 +48,10 @@ export class CommentsQueryRepo extends QueryRepo<CommentModelType> {
         }
     }
     // @ts-ignore
-    async findById(userLogin: string, id: string) {
+    async findById(userId: string | number | undefined, id: string) {
         const i = await super.findById(id, { postId: 0 });
-        const myStatus = i?.likesInfo?.usersStatistics[userLogin]
-            ? i.likesInfo?.usersStatistics[userLogin]
+        const myStatus = userId && i?.likesInfo?.usersStatistics[userId]
+            ? i.likesInfo?.usersStatistics[userId]
             : 'None';
         return {
             ...i,

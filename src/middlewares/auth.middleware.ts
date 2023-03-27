@@ -119,16 +119,18 @@ export const authMiddlewareJWT = async (req: Request, res: Response, next: NextF
 export const authCheckValidRefreshJWT = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies?.refreshToken;
   if (!refreshToken) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
-  
+
   const verifiedToken = jwtService.verifyToken(refreshToken);
   if (!verifiedToken) return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
-  console.log(1111);
+
   const ip = getUserIp(req);
   if (!ip) return res.status(HTTP_STATUSES.BAD_REQUEST_400).send();
 
   if (!req.context) req.context = { user: null, verifiedToken: null, userIP: undefined };
   
   req.context.userIP = ip;
+  // @ts-ignore
+  req.context.user = verifiedToken;
   // @ts-ignore
   req.context.verifiedToken = verifiedToken;
   next();

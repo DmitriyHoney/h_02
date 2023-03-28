@@ -52,7 +52,7 @@ export class CommentsQueryRepo extends QueryRepo<CommentModelType> {
     // @ts-ignore
     async findById(userId: string | number | undefined, id: string) {
         const i = await super.findById(id, { postId: 0 });
-        if (!i) return null;
+        if (!i) return i;
         const myStatus = userId && i?.likesInfo?.usersStatistics[userId]
             ? i.likesInfo?.usersStatistics[userId]
             : 'None';

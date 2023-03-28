@@ -42,15 +42,16 @@ class CommentsControllers {
 
     async likeUnlikeComment(req: Request, res: Response) {
         // @ts-ignore
-        const findComment = await this.commentsDomain.commentsQueryRepo.findById(req.context.user.login, req.params.id);
+        const findComment = await this.commentsDomain.commentsQueryRepo.findById(req.context.user.id, req.params.id);
         if (!findComment) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
 
 
         let likesInfo = findComment.likesInfo;
         // @ts-ignore
-        const oldStatus = likesInfo.usersStatistics[req.context.user?.login] || LikeStatus.NONE;
-        // @ts-ignore
         if (!likesInfo.usersStatistics) likesInfo.usersStatistics = {};
+
+        // @ts-ignore
+        const oldStatus = likesInfo?.usersStatistics[req.context.user?.id] || LikeStatus.NONE;
 
         // @ts-ignore
         if (oldStatus === LikeStatus.LIKE) likesInfo.likesCount--;
@@ -64,13 +65,7 @@ class CommentsControllers {
         else if (bodyStatus === LikeStatus.DISLIKE) likesInfo.dislikesCount++;
 
         // @ts-ignore
-        likesInfo.usersStatistics[req.context.user?.login] = bodyStatus
-        console.log({
-            content: findComment.content,
-            commentatorInfo: findComment.commentatorInfo,
-            postId: findComment.postId,
-            likesInfo: likesInfo
-        })
+        likesInfo.usersStatistics[req.context.user?.id] = bodyStatus
 
         const isUpdated = await this.commentsDomain.update(req.params.id, {
             // @ts-ignore

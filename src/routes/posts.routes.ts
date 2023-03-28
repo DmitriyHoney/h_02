@@ -33,7 +33,7 @@ router.get('/:postId/comments', authMiddlewareJWT, async (req: Request<{ postId?
     const isPostExist = await postQueryRepo.findById(req.params.postId || 'undefined');
     if (!isPostExist) return res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
     // @ts-ignore
-    const result = await commentsQueryRepo.find(req.context.user.login, pageSize, pageNumber, sortBy, sortDirection, { postId: req.params.postId });
+    const result = await commentsQueryRepo.find(req.context.user.id, pageSize, pageNumber, sortBy, sortDirection, { postId: req.params.postId });
     if (!result) return res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
 
     res.status(HTTP_STATUSES.OK_200).send(result);
@@ -59,7 +59,7 @@ router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, vali
         }
     });
     // @ts-ignore
-    const result = await commentsQueryRepo.findById(req.context.user?.login, createdId);
+    const result = await commentsQueryRepo.findById(req.context.user?.id, createdId);
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 

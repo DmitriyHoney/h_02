@@ -130,7 +130,7 @@ export const authCheckValidRefreshJWT = async (req: Request, res: Response, next
   
   req.context.userIP = ip;
   // @ts-ignore
-  req.context.user = verifiedToken;
+  req.context.user = await usersQueryRepo.findById(verifiedToken.userId);
   // @ts-ignore
   req.context.verifiedToken = verifiedToken;
   next();

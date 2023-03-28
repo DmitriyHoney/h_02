@@ -1,11 +1,12 @@
 import request from 'supertest';
 import { initTestServer } from '../helpers/index'
-import {HTTP_STATUSES, VALIDATION_ERROR_MSG, Blog, ValidationErrors, Comment} from '../types/types';
+import {HTTP_STATUSES, VALIDATION_ERROR_MSG, Blog, ValidationErrors, Comment, LikeStatus} from '../types/types';
 import { Express } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { config as usersConfig } from './users.api.test';
 import { config as blogsConfig } from './blogs.api.test';
 import { config as postsConfig } from './posts.api.test';
+import { config as authConfig } from './auth.api.test';
 
 export const config = {
     app: null as Express | null,
@@ -35,11 +36,8 @@ describe('/comments', () => {
         url, deleteUrl, basicTokens, validBody,
         validBodyForUpdate,
     } = config;
-    let user = null;
     // @ts-ignore
-    let blog = null;
-    let post = null;
-    let comment = null;
+    let user, userAuthTokens, blog, post, comment = null;
     beforeAll(async () => {
         const init = await initTestServer();
         config.app = init.app;
@@ -52,18 +50,12 @@ describe('/comments', () => {
             await request(config.app).delete(deleteUrl)
                 .expect(HTTP_STATUSES.NO_CONTENT_204, {})
         });
-        test('should return 200 and empty array', async () => {
-            const result = await request(config.app).get(url)
-                .expect(HTTP_STATUSES.OK_200)
-
-            expect(result.body.items.length).toBe(0);
-        });
     })
 
 
     describe('CREATE USER AND LOGIN USER', () => {
         test('user create', async () => {
-            const response = await reqWithAuthHeader(config.app, 'post', `${usersConfig.url}`, basicTokens.correct)
+            const response = await reqWithAuthHeader(config.app, 'post', `${usersConfig.url}/`, basicTokens.correct)
                 .send({
                     login: "admin12",
                     password: "12345678",
@@ -76,6 +68,25 @@ describe('/comments', () => {
                 email: "admin@ya2.ru",
                 id: expect.any(String),
                 createdAt: expect.any(String),
+            });
+        });
+
+        test('user login', async () => {
+            const response = await request(config.app).post(`${authConfig.url}/login`)
+                .send({
+                    loginOrEmail: "admin12",
+                    password: "12345678",
+                })
+                .expect(HTTP_STATUSES.OK_200)
+            userAuthTokens = {
+                accessToken: response.body.accessToken,
+                // @ts-ignore
+                refreshToken: response.get('Set-Cookie')[0].split("=")[1].split(';')[0]
+            }
+
+            expect(userAuthTokens).toEqual({
+                accessToken: expect.any(String),
+                refreshToken: expect.any(String),
             });
         });
     });
@@ -95,7 +106,7 @@ describe('/comments', () => {
     });
 
     describe('CREATE POST', () => {
-        test('blog create', async () => {
+        test('post create', async () => {
             const response = await reqWithAuthHeader(config.app, 'post', `${postsConfig.url}`, basicTokens.correct)
                 .send({
                     ...postsConfig.validBody,
@@ -112,21 +123,160 @@ describe('/comments', () => {
         });
     });
 
-    describe('TEST COMMENTS', () => {
-        test('comment create', async () => {
-            const response = await reqWithAuthHeader(config.app, 'post', `${postsConfig.url}`, basicTokens.correct)
-                .send({
-                    ...postsConfig.validBody,
-                    // @ts-ignore
-                    blogId: blog.id
-                })
+    describe('TEST COMMENT LOGIC', () => {
+        test('create comment', async () => {
+            // @ts-ignore
+            const response = await request(config.app).post(`${postsConfig.url}/${post.id}/comments`)
+                // @ts-ignore
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .send(config.validBody)
                 .expect(HTTP_STATUSES.CREATED_201)
-            post = response.body;
+
+            comment = response.body;
             expect(response.body).toEqual({
-                ...post,
                 id: expect.any(String),
+                content: comment.content,
+                commentatorInfo: {
+                    // @ts-ignore
+                    userId: user.id,
+                    // @ts-ignore
+                    userLogin: user.login
+                },
                 createdAt: expect.any(String),
+                likesInfo: {
+                    likesCount: 0,
+                    dislikesCount: 0,
+                    myStatus: "None"
+                }
             });
         });
+        test('like comment', async () => {
+            await request(config.app)
+                // @ts-ignore
+                .put(`${config.url}/${comment.id}/like-status`)
+                // @ts-ignore
+                .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
+                // @ts-ignore
+                .send({
+                    likeStatus: LikeStatus.LIKE,
+                })
+                .expect(HTTP_STATUSES.NO_CONTENT_204);
+        });
+        test('check like comment', async () => {
+            // config.app.request.cookies.refreshToken = userAuthTokens.refreshToken
+            const postComments = await request(config.app)
+                // @ts-ignore
+                .get(`${postsConfig.url}/${post.id}/comments`)
+                // @ts-ignore
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .expect(HTTP_STATUSES.OK_200)
+            //
+            expect(postComments.body.items.length).toBe(1);
+            //
+            comment = postComments.body.items[0];
+            expect(comment).toEqual({
+                id: expect.any(String),
+                content: comment.content,
+                commentatorInfo: {
+                    // @ts-ignore
+                    userId: user.id,
+                    // @ts-ignore
+                    userLogin: user.login
+                },
+                createdAt: expect.any(String),
+                likesInfo: {
+                    likesCount: 1,
+                    dislikesCount: 0,
+                    myStatus: LikeStatus.LIKE
+                }
+            });
+        });
+
+
+        test('dislike comment', async () => {
+            await request(config.app)
+                // @ts-ignore
+                .put(`${config.url}/${comment.id}/like-status`)
+                // @ts-ignore
+                .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
+                // @ts-ignore
+                .send({
+                    likeStatus: LikeStatus.DISLIKE,
+                })
+                .expect(HTTP_STATUSES.NO_CONTENT_204);
+        });
+        test('check dislike comment', async () => {
+            // config.app.request.cookies.refreshToken = userAuthTokens.refreshToken
+            const postComments = await request(config.app)
+                // @ts-ignore
+                .get(`${postsConfig.url}/${post.id}/comments`)
+                // @ts-ignore
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .expect(HTTP_STATUSES.OK_200)
+            //
+            expect(postComments.body.items.length).toBe(1);
+            //
+            comment = postComments.body.items[0];
+            expect(comment).toEqual({
+                id: expect.any(String),
+                content: comment.content,
+                commentatorInfo: {
+                    // @ts-ignore
+                    userId: user.id,
+                    // @ts-ignore
+                    userLogin: user.login
+                },
+                createdAt: expect.any(String),
+                likesInfo: {
+                    likesCount: 0,
+                    dislikesCount: 1,
+                    myStatus: LikeStatus.DISLIKE
+                }
+            });
+        })
+
+
+        test('none like comment', async () => {
+            await request(config.app)
+                // @ts-ignore
+                .put(`${config.url}/${comment.id}/like-status`)
+                // @ts-ignore
+                .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
+                // @ts-ignore
+                .send({
+                    likeStatus: LikeStatus.NONE,
+                })
+                .expect(HTTP_STATUSES.NO_CONTENT_204);
+        });
+
+        test('check cancel likedislike comment', async () => {
+            // config.app.request.cookies.refreshToken = userAuthTokens.refreshToken
+            const postComments = await request(config.app)
+                // @ts-ignore
+                .get(`${postsConfig.url}/${post.id}/comments`)
+                // @ts-ignore
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .expect(HTTP_STATUSES.OK_200)
+            //
+            expect(postComments.body.items.length).toBe(1);
+            //
+            comment = postComments.body.items[0];
+            expect(comment).toEqual({
+                id: expect.any(String),
+                content: comment.content,
+                commentatorInfo: {
+                    // @ts-ignore
+                    userId: user.id,
+                    // @ts-ignore
+                    userLogin: user.login
+                },
+                createdAt: expect.any(String),
+                likesInfo: {
+                    likesCount: 0,
+                    dislikesCount: 0,
+                    myStatus: LikeStatus.NONE
+                }
+            });
+        })
     });
 });

@@ -10,7 +10,6 @@ export class UserDomain {
         this.usersCommandRepo = usersCommandRepo;
     }
     async create(body: User) {
-        debugger;
         const isExistUserThisEmail = await this.usersQueryRepo.findUserByEmail(body.email);
         if (isExistUserThisEmail) throw new Error(VALIDATION_ERROR_MSG.USER_THIS_EMAIL_EXIST);
         

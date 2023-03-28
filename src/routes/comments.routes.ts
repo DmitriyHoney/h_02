@@ -6,7 +6,7 @@ import {commentsControllers} from "../controllers/comments.controllers";
 
 const router = Router();
 
-router.get('/', commentsControllers.getAll.bind(commentsControllers));
+router.get('/', authCheckValidRefreshJWT, commentsControllers.getAll.bind(commentsControllers));
 router.get('/:id/', commentsControllers.getOne.bind(commentsControllers));
 
 router.put(
@@ -16,6 +16,7 @@ router.put(
 );
 router.put(
     '/:id/like-status',
+    authCheckValidRefreshJWT,
     ...likeCommentsBody, validatorsErrorsMiddleware,
     commentsControllers.likeUnlikeComment.bind(commentsControllers)
 );

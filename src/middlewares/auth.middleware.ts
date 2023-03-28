@@ -136,6 +136,19 @@ export const authCheckValidRefreshJWT = async (req: Request, res: Response, next
   next();
 };
 
+export const getUserByRefreshJWT = async (req: Request, res: Response, next: NextFunction) => {
+  const refreshToken = req.cookies?.refreshToken;
+  if (!refreshToken) return next();
+
+  const verifiedToken = jwtService.verifyToken(refreshToken);
+  if (!verifiedToken) return next();
+
+  if (!req.context) req.context = { user: null, verifiedToken: null, userIP: undefined };
+  // @ts-ignore
+  req.context.user = await usersQueryRepo.findById(verifiedToken.userId);
+  next();
+};
+
 const tempMethodsCount: any = {};
 
 // TODO: перенести хранение подсчёта кол-ва запросов в базу

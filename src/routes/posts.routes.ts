@@ -5,7 +5,12 @@ import { validatorsErrorsMiddleware } from '../middlewares';
 import { BaseGetQueryParams, HTTP_STATUSES } from '../types/types';
 import postsDomain from '../domain/posts.domain';
 import { postQueryRepo } from '../repositries/posts.repositry';
-import {authCheckValidRefreshJWT, authMiddleware, authMiddlewareJWT} from '../middlewares/auth.middleware';
+import {
+    authCheckValidRefreshJWT,
+    authMiddleware,
+    authMiddlewareJWT,
+    getUserByRefreshJWT
+} from '../middlewares/auth.middleware';
 import { commentsQueryRepo } from '../repositries/comments.repositry';
 import { commentsDomain } from "../controllers/comments.controllers";
 
@@ -27,7 +32,7 @@ router.get('/:id/', async (req: Request, res: Response) => {
 });
 
 
-router.get('/:postId/comments', authCheckValidRefreshJWT, async (req: Request<{ postId?: string}, {}, {}, BaseGetQueryParams>, res: Response) => {
+router.get('/:postId/comments', getUserByRefreshJWT, async (req: Request<{ postId?: string}, {}, {}, BaseGetQueryParams>, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
 
     const isPostExist = await postQueryRepo.findById(req.params.postId || 'undefined');

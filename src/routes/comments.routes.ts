@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import {createCommentsBody as validatorMiddleware, likeCommentsBody} from '../middlewares/comments.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
-import {authCheckValidRefreshJWT, authMiddlewareJWT} from '../middlewares/auth.middleware';
+import {authCheckValidRefreshJWT, authMiddlewareJWT, getUserByRefreshJWT} from '../middlewares/auth.middleware';
 import {commentsControllers} from "../controllers/comments.controllers";
 
 const router = Router();
 
-router.get('/', authCheckValidRefreshJWT, commentsControllers.getAll.bind(commentsControllers));
-router.get('/:id/', authCheckValidRefreshJWT, commentsControllers.getOne.bind(commentsControllers));
+router.get('/', getUserByRefreshJWT, commentsControllers.getAll.bind(commentsControllers));
+router.get('/:id/', getUserByRefreshJWT, commentsControllers.getOne.bind(commentsControllers));
 
 router.put(
     '/:id/',

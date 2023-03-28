@@ -36,6 +36,8 @@ export class CommentsQueryRepo extends QueryRepo<CommentModelType> {
                 const myStatus = userId && i.likesInfo?.usersStatistics[userId]
                     ? i.likesInfo?.usersStatistics[userId]
                     : 'None';
+                // @ts-ignore
+                delete i.likesInfo?.usersStatistics;
                 return {
                     ...i,
                     likesInfo: {

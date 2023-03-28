@@ -138,7 +138,18 @@ export const authCheckValidRefreshJWT = async (req: Request, res: Response, next
 
 export const getUserByRefreshJWT = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies?.refreshToken;
-  if (!refreshToken) return next();
+  if (!refreshToken) {
+    // @ts-ignore
+    const token = req.headers.authorization.split(' ')[1];
+    const payload = jwtService.verifyToken(token);
+    if (payload) {
+      if (!req.context) req.context = { user: null, verifiedToken: null, userIP: undefined };
+      // @ts-ignore
+      req.context.user = await usersQueryRepo.findById(payload.userId);
+      // req.context.deviceId = await usersQueryRepo.findById(payload.deviceId);
+    }
+    return next();
+  }
 
   const verifiedToken = jwtService.verifyToken(refreshToken);
   if (!verifiedToken) return next();

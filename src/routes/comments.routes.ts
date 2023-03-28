@@ -11,16 +11,17 @@ router.get('/:id/', commentsControllers.getOne.bind(commentsControllers));
 
 router.put(
     '/:id/',
+    authMiddlewareJWT,
     ...validatorMiddleware, validatorsErrorsMiddleware,
     commentsControllers.update.bind(commentsControllers)
 );
 router.put(
     '/:id/like-status',
-    authCheckValidRefreshJWT,
+    authMiddlewareJWT,
     ...likeCommentsBody, validatorsErrorsMiddleware,
     commentsControllers.likeUnlikeComment.bind(commentsControllers)
 );
-router.delete('/:id/', commentsControllers.update.bind(commentsControllers));
+router.delete('/:id/', authMiddlewareJWT, commentsControllers.update.bind(commentsControllers));
 
 
 export default router;

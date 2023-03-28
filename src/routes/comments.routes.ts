@@ -7,7 +7,7 @@ import {commentsControllers} from "../controllers/comments.controllers";
 const router = Router();
 
 router.get('/', authCheckValidRefreshJWT, commentsControllers.getAll.bind(commentsControllers));
-router.get('/:id/', commentsControllers.getOne.bind(commentsControllers));
+router.get('/:id/', authCheckValidRefreshJWT, commentsControllers.getOne.bind(commentsControllers));
 
 router.put(
     '/:id/',

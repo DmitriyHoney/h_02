@@ -138,7 +138,7 @@ export const authCheckValidRefreshJWT = async (req: Request, res: Response, next
 
 export const getUserByRefreshJWT = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies?.refreshToken;
-  if (!refreshToken) {
+  if (!refreshToken && req.headers?.authorization) {
     // @ts-ignore
     const token = req.headers.authorization.split(' ')[1];
     const payload = jwtService.verifyToken(token);

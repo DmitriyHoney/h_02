@@ -137,7 +137,7 @@ export const authCheckValidRefreshJWT = async (req: Request, res: Response, next
 };
 
 export const getUserByRefreshJWT = async (req: Request, res: Response, next: NextFunction) => {
-  if (req.context.user) return next();
+  if (req.context && req.context.user) return next();
   const refreshToken = req.cookies?.refreshToken;
   if (!refreshToken && req.headers?.authorization) {
     // @ts-ignore

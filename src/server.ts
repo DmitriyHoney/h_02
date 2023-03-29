@@ -1,4 +1,6 @@
-import {startApp} from "./index";
+import { startApp } from "./index";
 
 
-startApp();
+(async () => {
+    await startApp();
+})();

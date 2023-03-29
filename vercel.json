@@ -2,9 +2,9 @@
     "version": 2,
     "name": "hw_02",
     "builds": [
-       { "src": "src/server.ts", "use": "@vercel/node" }
+       { "src": "src/index.ts", "use": "@vercel/node" }
     ],
     "routes": [
-       { "src": "/(.*)", "dest": "src/server.ts" }
+       { "src": "/(.*)", "dest": "src/index.ts" }
     ]
 }

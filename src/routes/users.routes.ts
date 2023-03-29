@@ -6,7 +6,7 @@ import { userControllers } from '../controllers/users.controllers';
 
 const router = Router();
 
-router.get('/ttt', authMiddleware, (req, res) => {
+router.get('/ttt', (req, res) => {
     res.status(200).send("wow");
 });
 router.get('/', authMiddleware, userControllers.getAll.bind(userControllers));

@@ -1,3 +1,4 @@
-import { startApp } from ".";
+import {startApp} from "./index";
+
 
 startApp();

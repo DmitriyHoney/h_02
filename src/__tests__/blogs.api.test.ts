@@ -1,9 +1,11 @@
 import request from 'supertest';
-import { initTestServer } from '../helpers/index'
 import { HTTP_STATUSES, VALIDATION_ERROR_MSG, Blog, ValidationErrors } from '../types/types';
 import { Express } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { config as postConfig } from './posts.api.test';
+import {settings} from "../settings/";
+import app from "../settings";
+import {connectDB} from "../db";
 
 export const config = {
     app: null as Express | null,
@@ -40,9 +42,12 @@ describe('/blogs', () => {
         validBodyForUpdate,
     } = config;
     beforeAll(async () => {
-        const init = await initTestServer();
-        config.app = init.app;
-        config.server = init.server;
+        const server = app.listen(settings.PORT_TEST, async () => {
+            await connectDB();
+            console.log(`Example app listening on port ${settings.PORT_TEST}`);
+        });
+        config.app = app;
+        config.server = server;
     });
     afterAll(() => config.server?.close());
 

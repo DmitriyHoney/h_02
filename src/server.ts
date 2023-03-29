@@ -1,6 +1,3 @@
 import { startApp } from "./index";
 
-
-(async () => {
-    await startApp();
-})();
+export default startApp();

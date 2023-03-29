@@ -15,9 +15,6 @@ import testRoute from './routes/test.routes';
 
 
 const app = express();
-app.use((req, res, next) => {
-    
-});
 app.use(cors());
 app.use(cookies());
 app.use(bodyParser.json());

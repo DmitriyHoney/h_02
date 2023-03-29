@@ -96,6 +96,6 @@ export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
         return this.collection.find({ ...filters }, { ...excludeFields, updatedAt: 0  });
     }
     async findById(_id: ObjectId | string, excludeFields: object = {}) {
-        return await this.collection.findOne({ _id }, { ...excludeFields, updatedAt: 0  })
+        return this.collection.findOne({ _id }, { ...excludeFields, updatedAt: 0  })
     }
 }

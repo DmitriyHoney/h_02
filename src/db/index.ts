@@ -6,9 +6,8 @@ let dbName: string;
 export const connectDB = async (isForTest: boolean = false) => {
     dbName = isForTest ? settings.DB_NAME_TEST : settings.DB_NAME;
     try {
-        settings.DB_URL.indexOf('localhost') >= 0
-            ? await mongoose.connect(`${settings.DB_URL}/${dbName}`)
-            : await mongoose.connect(`${settings.DB_URL}`)
+        const urldb = settings.DB_URL.indexOf('localhost') >= 0 ? `${settings.DB_URL}/${dbName}` : `${settings.DB_URL}`;
+        await mongoose.connect(urldb)
         console.log(`Connected successfully - ${settings.DB_URL}/${dbName}`)
     } catch (e) {
         console.error(e);

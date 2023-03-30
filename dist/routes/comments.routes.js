@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const comments_middleware_1 = require("../middlewares/comments.middleware");
+const middlewares_1 = require("../middlewares");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const comments_controllers_1 = require("../controllers/comments.controllers");
+const router = (0, express_1.Router)();
+router.get('/', auth_middleware_1.getUserByRefreshJWT, comments_controllers_1.commentsControllers.getAll.bind(comments_controllers_1.commentsControllers));
+router.get('/:id/', auth_middleware_1.getUserByRefreshJWT, comments_controllers_1.commentsControllers.getOne.bind(comments_controllers_1.commentsControllers));
+router.put('/:id/', auth_middleware_1.authMiddlewareJWT, ...comments_middleware_1.createCommentsBody, middlewares_1.validatorsErrorsMiddleware, comments_controllers_1.commentsControllers.update.bind(comments_controllers_1.commentsControllers));
+router.put('/:id/like-status', auth_middleware_1.authMiddlewareJWT, ...comments_middleware_1.likeCommentsBody, middlewares_1.validatorsErrorsMiddleware, comments_controllers_1.commentsControllers.likeUnlikeComment.bind(comments_controllers_1.commentsControllers));
+router.delete('/:id/', auth_middleware_1.authMiddlewareJWT, comments_controllers_1.commentsControllers.update.bind(comments_controllers_1.commentsControllers));
+exports.default = router;

@@ -40,6 +40,7 @@ router.get('/:blogId/posts', (req, res) => __awaiter(void 0, void 0, void 0, fun
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
     // @ts-ignore
     const result = yield posts_repositry_1.postQueryRepo.findByBlogId(pageSize, pageNumber, sortBy, sortDirection, req.params.blogId);
+    // @ts-ignore
     if (!result || result.items.length === 0) {
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;

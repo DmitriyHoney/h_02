@@ -160,6 +160,8 @@ describe('/comments', () => {
                 // @ts-ignore
                 .put(`${config.url}/${comment.id}/like-status`)
                 // @ts-ignore
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                // @ts-ignore
                 .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
                 // @ts-ignore
                 .send({
@@ -203,7 +205,7 @@ describe('/comments', () => {
                 // @ts-ignore
                 .put(`${config.url}/${comment.id}/like-status`)
                 // @ts-ignore
-                .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
                 // @ts-ignore
                 .send({
                     likeStatus: LikeStatus.DISLIKE,
@@ -246,6 +248,8 @@ describe('/comments', () => {
                 // @ts-ignore
                 .put(`${config.url}/${comment.id}/like-status`)
                 // @ts-ignore
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                // @ts-ignore
                 .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
                 // @ts-ignore
                 .send({
@@ -259,7 +263,7 @@ describe('/comments', () => {
             const postComments = await request(config.app)
                 // @ts-ignore
                 .get(`${postsConfig.url}/${post.id}/comments`)
-                // @ts-ignore
+                // @ts-ignoreW
                 .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
                 .expect(HTTP_STATUSES.OK_200)
             //

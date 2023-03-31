@@ -55,10 +55,10 @@ class CommentsControllers {
         });
     }
     likeUnlikeComment(req, res) {
-        var _a, _b;
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             // @ts-ignore
-            const findComment = yield this.commentsDomain.commentsQueryRepo.findById(req.context.user.id, req.params.id);
+            const findComment = yield this.commentsDomain.commentsQueryRepo.findByIdAllFields(req.context.user.id, req.params.id);
             if (!findComment)
                 return res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send();
             let likesInfo = findComment.likesInfo;
@@ -66,7 +66,9 @@ class CommentsControllers {
             if (!likesInfo.usersStatistics)
                 likesInfo.usersStatistics = {};
             // @ts-ignore
-            const oldStatus = (likesInfo === null || likesInfo === void 0 ? void 0 : likesInfo.usersStatistics[(_a = req.context.user) === null || _a === void 0 ? void 0 : _a.id]) || types_1.LikeStatus.NONE;
+            const userId = (_a = req.context.user) === null || _a === void 0 ? void 0 : _a.id.toString();
+            // @ts-ignore
+            const oldStatus = (likesInfo === null || likesInfo === void 0 ? void 0 : likesInfo.usersStatistics[userId]) || types_1.LikeStatus.NONE;
             // @ts-ignore
             if (oldStatus === types_1.LikeStatus.LIKE)
                 likesInfo.likesCount--;
@@ -81,7 +83,7 @@ class CommentsControllers {
             else if (bodyStatus === types_1.LikeStatus.DISLIKE)
                 likesInfo.dislikesCount++;
             // @ts-ignore
-            likesInfo.usersStatistics[(_b = req.context.user) === null || _b === void 0 ? void 0 : _b.id] = bodyStatus;
+            likesInfo.usersStatistics[userId] = bodyStatus;
             const isUpdated = yield this.commentsDomain.update(req.params.id, {
                 // @ts-ignore
                 content: findComment.content,

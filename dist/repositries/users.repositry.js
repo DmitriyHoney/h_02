@@ -34,7 +34,6 @@ class UsersQueryRepo extends base_repositry_1.QueryRepo {
                     prepareFilters.$or = [];
                 prepareFilters.$or.push({ login: { $regex: filters.searchLoginTerm, $options: "i" } });
             }
-            ;
             if (filters === null || filters === void 0 ? void 0 : filters.searchEmailTerm) {
                 if (!prepareFilters.$or)
                     prepareFilters.$or = [];

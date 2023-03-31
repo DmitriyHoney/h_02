@@ -20,9 +20,14 @@ class UserControllers {
     }
     getAll(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { pageSize, pageNumber, sortBy, sortDirection, searchEmailTerm, searchLoginTerm } = req.query;
-            const result = yield this.usersDomain.usersQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { searchEmailTerm, searchLoginTerm });
-            res.send(result);
+            try {
+                const { pageSize, pageNumber, sortBy, sortDirection, searchEmailTerm, searchLoginTerm } = req.query;
+                const result = yield this.usersDomain.usersQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { searchEmailTerm, searchLoginTerm });
+                res.send(result);
+            }
+            catch (e) {
+                console.log(11111, e);
+            }
         });
     }
     create(req, res) {

@@ -33,15 +33,15 @@ class CommentsQueryRepo extends base_repositry_1.QueryRepo {
             return Object.assign(Object.assign({}, res), { 
                 // @ts-ignore
                 items: res.items.map((i) => {
-                    var _a, _b, _c, _d, _e;
-                    const myStatus = userId && ((_a = i.likesInfo) === null || _a === void 0 ? void 0 : _a.usersStatistics[userId])
-                        ? (_b = i.likesInfo) === null || _b === void 0 ? void 0 : _b.usersStatistics[userId]
+                    var _a, _b, _c, _d, _e, _f;
+                    const myStatus = userId && ((_a = i.likesInfo) === null || _a === void 0 ? void 0 : _a.usersStatistics) && ((_b = i.likesInfo) === null || _b === void 0 ? void 0 : _b.usersStatistics[userId])
+                        ? (_c = i.likesInfo) === null || _c === void 0 ? void 0 : _c.usersStatistics[userId]
                         : 'None';
                     // @ts-ignore
-                    (_c = i.likesInfo) === null || _c === void 0 ? true : delete _c.usersStatistics;
+                    (_d = i.likesInfo) === null || _d === void 0 ? true : delete _d.usersStatistics;
                     return Object.assign(Object.assign({}, i), { likesInfo: {
-                            likesCount: ((_d = i === null || i === void 0 ? void 0 : i.likesInfo) === null || _d === void 0 ? void 0 : _d.likesCount) || 0,
-                            dislikesCount: ((_e = i === null || i === void 0 ? void 0 : i.likesInfo) === null || _e === void 0 ? void 0 : _e.dislikesCount) || 0,
+                            likesCount: ((_e = i === null || i === void 0 ? void 0 : i.likesInfo) === null || _e === void 0 ? void 0 : _e.likesCount) || 0,
+                            dislikesCount: ((_f = i === null || i === void 0 ? void 0 : i.likesInfo) === null || _f === void 0 ? void 0 : _f.dislikesCount) || 0,
                             myStatus,
                         } });
                 }) });
@@ -71,6 +71,26 @@ class CommentsQueryRepo extends base_repositry_1.QueryRepo {
             delete res.__v;
             // @ts-ignore
             delete res.likesInfo.usersStatistics;
+            return res;
+        });
+    }
+    findByIdAllFields(userId, id) {
+        const _super = Object.create(null, {
+            findById: { get: () => super.findById }
+        });
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            const i = yield _super.findById.call(this, id, { postId: 0 });
+            if (!i)
+                return null;
+            const myStatus = userId && ((_a = i === null || i === void 0 ? void 0 : i.likesInfo) === null || _a === void 0 ? void 0 : _a.usersStatistics[userId])
+                ? (_b = i.likesInfo) === null || _b === void 0 ? void 0 : _b.usersStatistics[userId]
+                : 'None';
+            let res = i.toObject();
+            // @ts-ignore
+            res.likesInfo = Object.assign(Object.assign({}, res.likesInfo), { myStatus: myStatus });
+            // @ts-ignore
+            res.id = res._id;
             return res;
         });
     }

@@ -1,16 +1,13 @@
 import { UserDomain } from "../domain/users.domain";
 import { Request, Response } from 'express';
 import { BaseGetQueryParams, HTTP_STATUSES, VALIDATION_ERROR_MSG, ValidationErrors } from '../types/types';
-import {usersCommandRepo, usersQueryRepo} from "../repositries/users.repositry";
+import {inject, injectable} from "inversify";
 
 type GetAllUsersQuery = { searchLoginTerm?: string, searchEmailTerm?: string } & BaseGetQueryParams;
 
-class UserControllers {
-    constructor(
-        protected usersDomain: UserDomain
-    ) {
-        this.usersDomain = usersDomain;
-    }
+@injectable()
+export class UserControllers {
+    constructor(@inject(UserDomain) protected usersDomain: UserDomain) {}
     async getAll(req: Request<{}, {}, {}, GetAllUsersQuery>, res: Response) {
         const { pageSize, pageNumber, sortBy, sortDirection, searchEmailTerm, searchLoginTerm } = req.query;
         const result = await this.usersDomain.usersQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { searchEmailTerm, searchLoginTerm });
@@ -47,6 +44,3 @@ class UserControllers {
             : res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
     };
 }
-
-export const userDomain = new UserDomain(usersQueryRepo, usersCommandRepo);
-export const userControllers = new UserControllers(userDomain);

@@ -16,8 +16,9 @@ import DeviceActiveSessionsDomain from '../domain/activeDeviceSessions.domain';
 import { deviceActiveSessionsQueryRepo } from '../repositries/activeDeviceSessions.repositry';
 import pwdDomain from '../domain/pwd.domain';
 import { pwdQueryRepo, pwdCommandRepo } from '../repositries/pwd.repositry';
-import {userDomain} from "../controllers/users.controllers";
-
+import container from "../composition-roots";
+import {UserDomain} from "../domain/users.domain";
+const userDomain = container.resolve(UserDomain);
 const router = Router();
 
 router.post('/registration', ...authRegistration, secureToManyRequests, validatorsErrorsMiddleware, async (req: Request, res: Response) => {

@@ -2,7 +2,9 @@ import { Router } from 'express';
 import { validatorsErrorsMiddleware } from '../middlewares';
 import { createUsersBody as validatorMiddleware } from '../middlewares/users.middleware';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import { userControllers } from '../controllers/users.controllers';
+import { UserControllers } from '../controllers/users.controllers';
+import container from '../composition-roots';
+const userControllers = container.resolve(UserControllers);
 
 const router = Router();
 

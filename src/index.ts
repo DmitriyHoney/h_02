@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import 'dotenv/config'
 import express from 'express';
 import cors from 'cors';
@@ -14,6 +15,7 @@ import { connectDB } from './db'
 import killPort from 'kill-port';
 import { settings } from './settings';
 const { PORT, PORT_TEST } = settings;
+
 
 export const app = express();
 app.use(cors());

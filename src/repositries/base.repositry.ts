@@ -1,6 +1,7 @@
 import { WithId, Collection } from 'mongodb';
 import mongoose, { IfAny, Document, Require_id, ObjectId } from 'mongoose';
 import { PaginationSortingType } from '../types/types';
+import {injectable, unmanaged} from "inversify";
 
 interface GenericRepoCommandLayerFn<Payload> {
     create: (payload: Payload) => Promise<string | number>
@@ -9,9 +10,10 @@ interface GenericRepoCommandLayerFn<Payload> {
     _deleteAll: () => Promise<boolean>
 }
 
+@injectable()
 export class CommandRepo<I, P> implements GenericRepoCommandLayerFn<P> {
-    collection: mongoose.Model<I>;
-    constructor(collection: mongoose.Model<I>) {
+    public collection: mongoose.Model<I>;
+    public constructor(collection: mongoose.Model<I>) {
         this.collection = collection;
     }
     // @ts-ignore
@@ -52,9 +54,10 @@ interface GenericRepoQueryLayerFn<ItemType> {
 
 type ReturnedQueryGetAll<I> = PaginationSortingType<WithId<PaginationSortingType<I> & Document>>;
 
+@injectable()
 export class QueryRepo<I> implements GenericRepoQueryLayerFn<I> {
-    collection: mongoose.Model<I>;
-    constructor(collection: mongoose.Model<I>) {
+    public collection: mongoose.Model<I>;
+    public constructor(collection: mongoose.Model<I>) {
         this.collection = collection;
     }
     async find(

@@ -1,14 +1,13 @@
 import { UsersCommandRepo, UsersQueryRepo } from '../repositries/users.repositry'; //usersQueryRepo, usersCommandRepo
-import { User, VALIDATION_ERROR_MSG } from '../types/types'; 
+import { User, VALIDATION_ERROR_MSG } from '../types/types';
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class UserDomain {
     constructor(
-        public usersQueryRepo: UsersQueryRepo,
-        public usersCommandRepo: UsersCommandRepo, 
-    ) {
-        this.usersQueryRepo = usersQueryRepo;
-        this.usersCommandRepo = usersCommandRepo;
-    }
+        @inject(UsersQueryRepo) public usersQueryRepo: UsersQueryRepo,
+        @inject(UsersCommandRepo) public usersCommandRepo: UsersCommandRepo,
+    ) {}
     async create(body: User) {
         const isExistUserThisEmail = await this.usersQueryRepo.findUserByEmail(body.email);
         if (isExistUserThisEmail) throw new Error(VALIDATION_ERROR_MSG.USER_THIS_EMAIL_EXIST);

@@ -2,20 +2,32 @@ import { CommandRepo, QueryRepo } from './base.repositry';
 import { User, UserModelType } from '../types/types';
 import { UserModel } from '../db/collections/users.collection';
 import { ObjectId } from 'mongoose';
+import {inject, injectable, named} from "inversify";
 
-export class UsersCommandRepo extends CommandRepo<UserModelType, User> {}
+@injectable()
+export class UsersCommandRepo extends CommandRepo<UserModelType, User> {
+    public constructor(@inject(UserModel) @named("master2") collection: any) { // length = 0
+        super(collection);
+    }
+}
 // @ts-ignore
 export const usersCommandRepo =  new UsersCommandRepo(UserModel);
 
 const baseUserExludeFields = {
-    confirmedInfo: 0, 
-    password: 0, 
+    confirmedInfo: 0,
+    password: 0,
     updatedAt: 0,
 };
 
+@injectable()
 export class UsersQueryRepo extends QueryRepo<UserModelType> {
+    public constructor(
+        @inject(UserModel) @named("master") collection: any
+    ) { // length = 0
+        super(collection);
+    }
     async find(
-        pageSize?: string, 
+        pageSize?: string,
         pageNumber?: string,
         sortBy?: string,
         sortDirection?: string,
@@ -33,13 +45,13 @@ export class UsersQueryRepo extends QueryRepo<UserModelType> {
         return await super.find(pageSize, pageNumber, sortBy, sortDirection, prepareFilters, baseUserExludeFields);
     }
     async findUserByEmail(email: string) {
-        return await UserModel.findOne({ email }, { projection: baseUserExludeFields })
+        return await this.collection.findOne({ email }, { projection: baseUserExludeFields })
     }
     async findUserByLogin(login: string) {
-        return await UserModel.findOne({ login }, { projection: baseUserExludeFields })
+        return await this.collection.findOne({ login }, { projection: baseUserExludeFields })
     }
     async findNoActUserByConfirmedCode(code: string) {
-        return await UserModel.findOne({ 'confirmedInfo.code': code, 'confirmedInfo.isConfirmedEmail': false }, { projection: baseUserExludeFields })
+        return await this.collection.findOne({ 'confirmedInfo.code': code, 'confirmedInfo.isConfirmedEmail': false }, { projection: baseUserExludeFields })
     }
     async findById(id: ObjectId) {
         return await super.findById(id, baseUserExludeFields);

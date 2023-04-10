@@ -2,7 +2,9 @@ import request from 'supertest';
 import { HTTP_STATUSES, VALIDATION_ERROR_MSG, AuthBody } from '../types/types';
 import { Express } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
-import { initTestServer } from '../helpers';
+import {settings} from "../settings/";
+import app from "../settings";
+import {connectDB} from "../db";
 
 export const config = {
     app: null as Express | null,
@@ -29,9 +31,12 @@ describe('/auth', () => {
     let user: any = null;
 
     beforeAll(async () => {
-        const init = await initTestServer();
-        config.app = init.app;
-        config.server = init.server;
+        const server = app.listen(settings.PORT_TEST, async () => {
+            await connectDB();
+            console.log(`Example app listening on port ${settings.PORT_TEST}`);
+        });
+        config.app = app;
+        config.server = server;
         await request(config.app).delete(deleteUrl)
             .expect(HTTP_STATUSES.NO_CONTENT_204, {})
 

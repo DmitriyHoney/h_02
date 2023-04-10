@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { UserModelType } from '../types/types';
-import { settings } from '../settings';
+import { settings } from '../settings/';
 
 export const jwtService = {
     createJWT(user: UserModelType, expiresIn: string, deviceId?: string) {

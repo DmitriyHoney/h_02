@@ -34,6 +34,7 @@ router.get('/:blogId/posts', async (req: Request, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
     // @ts-ignore
     const result = await postQueryRepo.findByBlogId(pageSize, pageNumber, sortBy, sortDirection, req.params.blogId);
+    // @ts-ignore
     if (!result || result.items.length === 0) {
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;

@@ -37,7 +37,7 @@ export class UsersQueryRepo extends QueryRepo<UserModelType> {
         if (filters?.searchLoginTerm) {
             if (!prepareFilters.$or) prepareFilters.$or = [];
             prepareFilters.$or.push({ login: { $regex: filters.searchLoginTerm, $options: "i" } })
-        };
+        }
         if (filters?.searchEmailTerm) {
             if (!prepareFilters.$or) prepareFilters.$or = [];
             prepareFilters.$or.push({ email: { $regex: filters.searchEmailTerm, $options: "i" } });

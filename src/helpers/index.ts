@@ -1,15 +1,5 @@
 import { Request } from 'express';
 import bcrypt from 'bcrypt';
-import { startApp } from "..";
-
-
-let init: any = null;
-
-export const initTestServer = async () => {
-    if (init) return init;
-    init = await startApp(true);
-    return init;
-}
 
 export const isEmail = (email: string | undefined | null) => {
     if (typeof email !== 'string') return false;

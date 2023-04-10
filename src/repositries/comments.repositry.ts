@@ -30,10 +30,11 @@ export class CommentsQueryRepo extends QueryRepo<CommentModelType> {
             },
         );
         return {
+            // @ts-ignore
             ...res,
             // @ts-ignore
             items: res.items.map((i: CommentModelType) => {
-                const myStatus = userId && i.likesInfo?.usersStatistics[userId]
+                const myStatus = userId && i.likesInfo?.usersStatistics && i.likesInfo?.usersStatistics[userId]
                     ? i.likesInfo?.usersStatistics[userId]
                     : 'None';
                 // @ts-ignore
@@ -68,6 +69,21 @@ export class CommentsQueryRepo extends QueryRepo<CommentModelType> {
         delete res.__v;
         // @ts-ignore
         delete res.likesInfo.usersStatistics;
+        return res;
+    }
+
+    async findByIdAllFields(userId: string | number | undefined, id: string) {
+        const i = await super.findById(id, { postId: 0 });
+        if (!i) return null;
+        const myStatus = userId && i?.likesInfo?.usersStatistics[userId]
+            ? i.likesInfo?.usersStatistics[userId]
+            : 'None';
+
+        let res = i.toObject();
+        // @ts-ignore
+        res.likesInfo = { ...res.likesInfo, myStatus: myStatus };
+        // @ts-ignore
+        res.id = res._id;
         return res;
     }
 }

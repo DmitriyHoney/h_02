@@ -9,9 +9,13 @@ type GetAllUsersQuery = { searchLoginTerm?: string, searchEmailTerm?: string } &
 export class UserControllers {
     constructor(@inject(UserDomain) protected usersDomain: UserDomain) {}
     async getAll(req: Request<{}, {}, {}, GetAllUsersQuery>, res: Response) {
-        const { pageSize, pageNumber, sortBy, sortDirection, searchEmailTerm, searchLoginTerm } = req.query;
-        const result = await this.usersDomain.usersQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { searchEmailTerm, searchLoginTerm });
-        res.send(result);
+        try {
+            const { pageSize, pageNumber, sortBy, sortDirection, searchEmailTerm, searchLoginTerm } = req.query;
+            const result = await this.usersDomain.usersQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, { searchEmailTerm, searchLoginTerm });
+            res.send(result);
+        } catch (e) {
+            console.log(11111, e)
+        }
     }
     
     async create(req: Request, res: Response) {

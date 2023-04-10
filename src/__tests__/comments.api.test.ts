@@ -1,5 +1,4 @@
 import request from 'supertest';
-import { initTestServer } from '../helpers/index'
 import {HTTP_STATUSES, VALIDATION_ERROR_MSG, Blog, ValidationErrors, Comment, LikeStatus} from '../types/types';
 import { Express } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
@@ -7,6 +6,9 @@ import { config as usersConfig } from './users.api.test';
 import { config as blogsConfig } from './blogs.api.test';
 import { config as postsConfig } from './posts.api.test';
 import { config as authConfig } from './auth.api.test';
+import {settings} from "../settings/";
+import app from "../settings";
+import {connectDB} from "../db";
 
 export const config = {
     app: null as Express | null,
@@ -39,9 +41,12 @@ describe('/comments', () => {
     // @ts-ignore
     let user, userAuthTokens, blog, post, comment = null;
     beforeAll(async () => {
-        const init = await initTestServer();
-        config.app = init.app;
-        config.server = init.server;
+        const server = app.listen(settings.PORT_TEST, async () => {
+            await connectDB();
+            console.log(`Example app listening on port ${settings.PORT_TEST}`);
+        });
+        config.app = app;
+        config.server = server;
     });
     afterAll(() => config.server?.close());
 
@@ -155,6 +160,8 @@ describe('/comments', () => {
                 // @ts-ignore
                 .put(`${config.url}/${comment.id}/like-status`)
                 // @ts-ignore
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                // @ts-ignore
                 .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
                 // @ts-ignore
                 .send({
@@ -198,7 +205,7 @@ describe('/comments', () => {
                 // @ts-ignore
                 .put(`${config.url}/${comment.id}/like-status`)
                 // @ts-ignore
-                .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
                 // @ts-ignore
                 .send({
                     likeStatus: LikeStatus.DISLIKE,
@@ -241,6 +248,8 @@ describe('/comments', () => {
                 // @ts-ignore
                 .put(`${config.url}/${comment.id}/like-status`)
                 // @ts-ignore
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                // @ts-ignore
                 .set('Cookie', [`refreshToken=${userAuthTokens.refreshToken}`])
                 // @ts-ignore
                 .send({
@@ -254,7 +263,7 @@ describe('/comments', () => {
             const postComments = await request(config.app)
                 // @ts-ignore
                 .get(`${postsConfig.url}/${post.id}/comments`)
-                // @ts-ignore
+                // @ts-ignoreW
                 .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
                 .expect(HTTP_STATUSES.OK_200)
             //

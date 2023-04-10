@@ -2,6 +2,7 @@ import app from './settings';
 import { settings } from './settings/';
 import { connectDB } from "./db";
 
+
 app.listen(settings.PORT, async () => {
     try {
         await connectDB();

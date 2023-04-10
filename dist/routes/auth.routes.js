@@ -25,14 +25,16 @@ const activeDeviceSessions_domain_1 = __importDefault(require("../domain/activeD
 const activeDeviceSessions_repositry_1 = require("../repositries/activeDeviceSessions.repositry");
 const pwd_domain_1 = __importDefault(require("../domain/pwd.domain"));
 const pwd_repositry_1 = require("../repositries/pwd.repositry");
-const users_controllers_1 = require("../controllers/users.controllers");
+const composition_roots_1 = __importDefault(require("../composition-roots"));
+const users_domain_1 = require("../domain/users.domain");
+const userDomain = composition_roots_1.default.resolve(users_domain_1.UserDomain);
 const router = (0, express_1.Router)();
 router.post('/registration', ...auth_middleware_1.authRegistration, auth_middleware_1.secureToManyRequests, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const confirmedInfo = {
         code: (0, helpers_1.generateUUID)(), codeExpired: (0, helpers_1.generateExpiredDate)({ hours: 1, min: 0, sec: 0 }).toISOString(), isConfirmedEmail: false
     };
     try {
-        yield users_controllers_1.userDomain.create(Object.assign(Object.assign({}, req.body), { confirmedInfo }));
+        yield userDomain.create(Object.assign(Object.assign({}, req.body), { confirmedInfo }));
         yield email_manager_1.emailManager.sendRegCodeConfirm(req.body.email, confirmedInfo.code);
         res.status(204).send();
     }

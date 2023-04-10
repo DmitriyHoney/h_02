@@ -8,14 +8,16 @@ const blogs_domain_1 = __importDefault(require("../domain/blogs.domain"));
 const posts_domain_1 = __importDefault(require("../domain/posts.domain"));
 const activeDeviceSessions_domain_1 = __importDefault(require("../domain/activeDeviceSessions.domain"));
 const types_1 = require("../types/types");
-const users_controllers_1 = require("../controllers/users.controllers");
 const comments_controllers_1 = require("../controllers/comments.controllers");
+const composition_roots_1 = __importDefault(require("../composition-roots"));
+const users_domain_1 = require("../domain/users.domain");
 const router = (0, express_1.Router)();
+const userDomain = composition_roots_1.default.resolve(users_domain_1.UserDomain);
 router.delete('/', (req, res) => {
     Promise.all([
         blogs_domain_1.default.deleteAll(),
         posts_domain_1.default.deleteAll(),
-        users_controllers_1.userDomain.deleteAll(),
+        userDomain.deleteAll(),
         comments_controllers_1.commentsDomain.deleteAll(),
         activeDeviceSessions_domain_1.default.deleteAll(),
     ]).then((result) => {

@@ -1,6 +1,7 @@
 import {body} from 'express-validator';
 import {LikeStatus, VALIDATION_ERROR_MSG} from '../types/types';
 
+
 export const createCommentsBody = [
     body('content')
         .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()

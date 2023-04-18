@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import {LastPostLikes, LikeStatus} from "../../types/types";
 
 const postSchema = new mongoose.Schema({
     title: String,
@@ -6,6 +7,12 @@ const postSchema = new mongoose.Schema({
     content: String,
     blogId: String,
     blogName: { type: String, require: false },
+    extendedLikesInfo: {
+        likesCount: Number,
+        dislikesCount: Number,
+        myStatus: String,
+        newestLikes: [],
+    }
 }, { timestamps: true });
 
 postSchema.method('toJSON', function() {

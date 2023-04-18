@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
-import { createPostsBody as validatorMiddleware } from '../middlewares/posts.middleware';
+import {createLikeForPostBody, createPostsBody as validatorMiddleware} from '../middlewares/posts.middleware';
 import { createCommentsBody } from '../middlewares/comments.middleware';
 import { validatorsErrorsMiddleware } from '../middlewares';
-import { BaseGetQueryParams, HTTP_STATUSES } from '../types/types';
+import {BaseGetQueryParams, HTTP_STATUSES, LastPostLikes, LikeStatus} from '../types/types';
 import postsDomain from '../domain/posts.domain';
-import { postQueryRepo } from '../repositries/posts.repositry';
+import {postCommandRepo, postQueryRepo} from '../repositries/posts.repositry';
 import {
     authCheckValidRefreshJWT,
     authMiddleware,
@@ -48,6 +48,55 @@ router.post('/',  authMiddleware, ...validatorMiddleware, validatorsErrorsMiddle
     const id = await postsDomain.create(req.body);
     const result = await postQueryRepo.findById(id.toString());
     res.status(HTTP_STATUSES.CREATED_201).send(result);
+});
+
+router.put('/:postId/like-status',  authMiddlewareJWT, ...createLikeForPostBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+    const post = await postQueryRepo.findById(req.params.postId);
+    if (!post) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
+
+    let likesInfo = post.extendedLikesInfo;
+    // @ts-ignore
+    if (!likesInfo.newestLikes) likesInfo.newestLikes = [];
+    // @ts-ignore
+    const userId = req.context.user?.id.toString();
+    // @ts-ignore
+    const existItemLikeStatus: any = likesInfo?.newestLikes.find((i) => i.userId === userId);
+    const oldStatus = existItemLikeStatus?.status || LikeStatus.NONE;
+
+    // @ts-ignore
+    if (oldStatus === LikeStatus.LIKE) likesInfo.likesCount--;
+    // @ts-ignore
+    if (oldStatus === LikeStatus.DISLIKE) likesInfo.dislikesCount--;
+
+    const bodyStatus = req.body.likeStatus;
+    // @ts-ignore
+    if (bodyStatus === LikeStatus.LIKE) likesInfo.likesCount++;
+    // @ts-ignore
+    else if (bodyStatus === LikeStatus.DISLIKE) likesInfo.dislikesCount++;
+
+    // @ts-ignore
+    likesInfo.newestLikes = likesInfo.newestLikes
+        // @ts-ignore
+        .filter((i) => i.userId !== req.context.user?.id.toString());
+
+    if (bodyStatus !== LikeStatus.NONE) {
+        const item: LastPostLikes = {
+            // @ts-ignore
+            userId: req.context.user?.id,
+            login: req.context.user?.login || '',
+            status: bodyStatus,
+            addedAt: new Date().toISOString()
+        }
+        likesInfo.newestLikes.push(item);
+    }
+
+    const isUpdated = await postCommandRepo.update(req.params.id, {
+        // @ts-ignore
+        likesInfo
+    });
+    isUpdated
+        ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()
+        : res.status(HTTP_STATUSES.NOT_FOUND_404).send();
 });
 
 router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {

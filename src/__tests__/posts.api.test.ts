@@ -1,11 +1,14 @@
 import request from 'supertest';
-import { HTTP_STATUSES, VALIDATION_ERROR_MSG, Post, ValidationErrors, PostModelType } from '../types/types';
+import {HTTP_STATUSES, VALIDATION_ERROR_MSG, Post, ValidationErrors, PostModelType, LikeStatus} from '../types/types';
 import { Express } from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import {settings} from "../settings/";
 import app from "../settings";
 import { config as blogConfig } from './blogs.api.test';
 import {connectDB} from "../db";
+import {config as usersConfig} from "./users.api.test";
+import {config as authConfig} from "./auth.api.test";
+import {ObjectId} from "mongodb";
 
 export const config = {
     app: null as Express | null,
@@ -38,10 +41,11 @@ export const config = {
 const reqWithAuthHeader = (app, method, url, token) => request(app)[method](url).set('Authorization', token);
 
 describe('/posts', () => {
-    const { 
+    const {
         url, deleteUrl, basicTokens, validBody,
         validBodyForUpdate,
     } = config;
+    let user: any, userAuthTokens: any, createdPost: any = null;
     let createdBlog: PostModelType | null = null;
     beforeAll(async () => {
         const server = app.listen(settings.PORT_TEST, async () => {
@@ -61,19 +65,57 @@ describe('/posts', () => {
     });
     afterAll(() => config.server?.close());
 
+    describe('CREATE USER AND LOGIN USER', () => {
+        test('user create', async () => {
+            const response = await reqWithAuthHeader(config.app, 'post', `${usersConfig.url}/`, basicTokens.correct)
+                .send({
+                    login: "admin12",
+                    password: "12345678",
+                    email: "admin@ya2.ru"
+                })
+                .expect(HTTP_STATUSES.CREATED_201)
+            user = response.body;
+            expect(response.body).toEqual({
+                login: "admin12",
+                email: "admin@ya2.ru",
+                id: expect.any(String),
+                createdAt: expect.any(String),
+            });
+        });
+
+        test('user login', async () => {
+            const response = await request(config.app).post(`${authConfig.url}/login`)
+                .send({
+                    loginOrEmail: "admin12",
+                    password: "12345678",
+                })
+                .expect(HTTP_STATUSES.OK_200)
+            userAuthTokens = {
+                accessToken: response.body.accessToken,
+                // @ts-ignore
+                refreshToken: response.get('Set-Cookie')[0].split("=")[1].split(';')[0]
+            }
+
+            expect(userAuthTokens).toEqual({
+                accessToken: expect.any(String),
+                refreshToken: expect.any(String),
+            });
+        });
+    });
+
     describe('INIT TEST AND CHECK CLEAN RESULT', () => {
         test('should return 200 and empty array', async () => {
             const result = await request(config.app).get(url)
                 .expect(HTTP_STATUSES.OK_200)
-                
-                expect(result.body).toEqual({
-                    pagesCount: 0,
-                    page: 1,
-                    pageSize: 10,
-                    totalCount: 0,
-                    items: []
-                })
-                expect(result.body.items.length).toBe(0);
+
+            expect(result.body).toEqual({
+                pagesCount: 0,
+                page: 1,
+                pageSize: 10,
+                totalCount: 0,
+                items: []
+            })
+            expect(result.body.items.length).toBe(0);
         });
     })
 
@@ -82,7 +124,7 @@ describe('/posts', () => {
             await request(config.app).post(url)
                 .send(validBody)
                 .expect(HTTP_STATUSES.NOT_AUTHORIZED_401, 'Not authorized')
-            
+
             await request(config.app).put(`${url}/778`)
                 .send(validBody)
                 .expect(HTTP_STATUSES.NOT_AUTHORIZED_401, 'Not authorized')
@@ -95,7 +137,7 @@ describe('/posts', () => {
             await reqWithAuthHeader(config.app, 'post', url, basicTokens.incorrect1)
                 .send(validBody)
                 .expect(HTTP_STATUSES.NOT_AUTHORIZED_401, 'Not authorized')
-            
+
             await reqWithAuthHeader(config.app, 'put', `${url}/778`, basicTokens.incorrect1)
                 .send(validBody)
                 .expect(HTTP_STATUSES.NOT_AUTHORIZED_401, 'Not authorized')
@@ -142,35 +184,39 @@ describe('/posts', () => {
     });
 
     describe('SET CORRECT Basic Token TO CRUD', () => {
-        let item: any;
-        
         test('Basic Token - should create', async () => {
-            item = await reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
+            createdPost = await reqWithAuthHeader(config.app, 'post', url, basicTokens.correct)
                 .send({
                     ...validBody,
                     // @ts-ignore
                     blogId: String(createdBlog?.id)
                 })
                 .expect(HTTP_STATUSES.CREATED_201)
-            
-            expect(item.body).toEqual({ 
+
+            expect(createdPost.body).toEqual({
                 id: expect.any(String),
                 createdAt: expect.any(String),
                 ...validBody,
                 // @ts-ignore
-                blogId: String(createdBlog?.id)
+                blogId: String(createdBlog?.id),
+                extendedLikesInfo: {
+                    likesCount: 0,
+                    dislikesCount: 0,
+                    myStatus: LikeStatus.NONE,
+                    newestLikes: []
+                }
             });
         });
-        test('Check item has been created', async () => {
+        test('Check createdPost has been created', async () => {
             const resultAll = await request(config.app)
                 .get(url)
                 .expect(HTTP_STATUSES.OK_200)
 
             expect(resultAll.body.items.length).toEqual(1)
-            expect(resultAll.body.items[0].id).toEqual(item.body.id)
+            expect(resultAll.body.items[0].id).toEqual(createdPost.body.id)
         });
-        test('Check updated item', async () => {
-            const updtRes = await reqWithAuthHeader(config.app, 'put', `${url}/${item.body.id}`, basicTokens.correct)
+        test('Check updated createdPost', async () => {
+            const updtRes = await reqWithAuthHeader(config.app, 'put', `${url}/${createdPost.body.id}`, basicTokens.correct)
                 .send({
                     ...validBodyForUpdate,
                     // @ts-ignore
@@ -179,19 +225,25 @@ describe('/posts', () => {
                 .expect(HTTP_STATUSES.NO_CONTENT_204)
 
             const updatedItem = await request(config.app)
-                .get(`${url}/${item.body.id}`)
+                .get(`${url}/${createdPost.body.id}`)
                 .expect(HTTP_STATUSES.OK_200)
-            
+
             expect(updatedItem.body).toEqual({
-                id: item.body.id,
-                createdAt: item.body.createdAt,
+                id: createdPost.body.id,
+                createdAt: createdPost.body.createdAt,
                 ...validBodyForUpdate,
                 // @ts-ignore
-                blogId: String(createdBlog?.id)
+                blogId: String(createdBlog?.id),
+                extendedLikesInfo: {
+                    likesCount: 0,
+                    dislikesCount: 0,
+                    myStatus: LikeStatus.NONE,
+                    newestLikes: []
+                }
             });
         })
-        test('Check item has been deleted', async () => {
-            await reqWithAuthHeader(config.app, 'delete', `${url}/${item.body.id}`, basicTokens.correct)
+        test('Check createdPost has been deleted', async () => {
+            await reqWithAuthHeader(config.app, 'delete', `${url}/${createdPost.body.id}`, basicTokens.correct)
                 .expect(HTTP_STATUSES.NO_CONTENT_204, {})
 
             const result = await request(config.app)
@@ -200,7 +252,7 @@ describe('/posts', () => {
 
             expect(result.body.items).toEqual([])
         })
-         
+
     });
 
     describe('CHECK NOT FOUND ITEM', () => {
@@ -276,6 +328,133 @@ describe('/posts', () => {
                     { message: VALIDATION_ERROR_MSG.REQUIRED, field: 'blogId' },
                 ]
             } as ValidationErrors );
+        });
+    });
+    
+    describe('Like & dislike & cancel logic on post', () => {
+        test('check unauthorized user', async () => {
+            await request(config.app).put(`${config.url}/${createdPost.body.id}/like-status`)
+                .send({
+                    likeStatus: "qqq"
+                })
+                .expect(HTTP_STATUSES.NOT_AUTHORIZED_401)
+        });
+
+        test('check like post which does not exist', async () => {
+            await request(config.app).put(`${config.url}/${new ObjectId()}/like-status`)
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .send({
+                    likeStatus: LikeStatus.LIKE
+                })
+                .expect(HTTP_STATUSES.NOT_FOUND_404)
+        });
+
+        test('check like post which invalid body', async () => {
+            await request(config.app).put(`${config.url}/123/like-status`)
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .send({
+                    likeStatus: "qqq"
+                })
+                .expect(HTTP_STATUSES.BAD_REQUEST_400)
+        });
+
+        test('check like success', async () => {
+            await request(config.app).put(`${config.url}/${createdPost.body.id}/like-status`)
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .send({
+                    likeStatus: LikeStatus.LIKE
+                })
+                .expect(HTTP_STATUSES.NO_CONTENT_204)
+
+            const result = await request(config.app).get(`${config.url}/${createdPost.body.id}`)
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .expect(HTTP_STATUSES.OK_200);
+
+            expect(result.body).toEqual({
+                id: createdPost.body.id,
+                title: createdPost.body.title,
+
+                shortDescription: createdPost.body.shortDescription, //expect.any(String),
+                content: createdPost.body.content,
+                // @ts-ignore
+                blogId: String(createdBlog?.id),
+                blogName: createdPost.body.blogName,
+                createdAt: createdPost.body.createdAt,
+                extendedLikesInfo: {
+                    likesCount: 1,
+                    dislikesCount: 0,
+                    myStatus: LikeStatus.LIKE,
+                    newestLikes: [
+                        {
+                            addedAt: expect.any(String),
+                            userId: user.id,
+                            login: user.login
+                        }
+                    ]
+                }
+            });
+        });
+
+        test('check dislike success', async () => {
+            await request(config.app).put(`${config.url}/${createdPost.body.id}/like-status`)
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .send({
+                    likeStatus: LikeStatus.DISLIKE
+                })
+                .expect(HTTP_STATUSES.NO_CONTENT_204)
+
+            const result = await request(config.app).get(`${config.url}/${createdPost.body.id}`)
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .expect(HTTP_STATUSES.OK_200);
+
+            expect(result.body).toEqual({
+                id: createdPost.body.id,
+                title: createdPost.body.title,
+
+                shortDescription: createdPost.body.shortDescription, //expect.any(String),
+                content: createdPost.body.content,
+                // @ts-ignore
+                blogId: String(createdBlog?.id),
+                blogName: createdPost.body.blogName,
+                createdAt: createdPost.body.createdAt,
+                extendedLikesInfo: {
+                    likesCount: 0,
+                    dislikesCount: 1,
+                    myStatus: LikeStatus.DISLIKE,
+                    newestLikes: []
+                }
+            });
+        });
+
+        test('check cancel like & dislike success', async () => {
+            await request(config.app).put(`${config.url}/${createdPost.body.id}/like-status`)
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .send({
+                    likeStatus: LikeStatus.NONE
+                })
+                .expect(HTTP_STATUSES.NO_CONTENT_204)
+
+            const result = await request(config.app).get(`${config.url}/${createdPost.body.id}`)
+                .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
+                .expect(HTTP_STATUSES.OK_200);
+
+            expect(result.body).toEqual({
+                id: createdPost.body.id,
+                title: createdPost.body.title,
+
+                shortDescription: createdPost.body.shortDescription, //expect.any(String),
+                content: createdPost.body.content,
+                // @ts-ignore
+                blogId: String(createdBlog?.id),
+                blogName: createdPost.body.blogName,
+                createdAt: createdPost.body.createdAt,
+                extendedLikesInfo: {
+                    likesCount: 0,
+                    dislikesCount: 0,
+                    myStatus: LikeStatus.NONE,
+                    newestLikes: []
+                }
+            });
         });
     });
 });

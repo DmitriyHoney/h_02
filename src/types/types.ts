@@ -51,12 +51,27 @@ export type Blog = {
     isMembership?: boolean
 }
 
+export type LastPostLikes = {
+    addedAt: string,
+    userId: string,
+    login: string,
+    status: LikeStatus
+}
+
+export type PostLikesInfo = {
+    likesCount: number,
+    dislikesCount: number,
+    myStatus: LikeStatus,
+    newestLikes: Array<LastPostLikes>,
+}
+
 export type Post = {
     title: string,
     shortDescription: string,
     content: string,
     blogId: string,
     blogName?: string,
+    extendedLikesInfo: PostLikesInfo
 }
 
 export type User = {

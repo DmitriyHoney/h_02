@@ -55,7 +55,7 @@ router.post('/',  authMiddleware, ...validatorMiddleware, validatorsErrorsMiddle
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 
-router.put('/:postId/like-status',  getUserByRefreshJWT, authMiddlewareJWT, ...createLikeForPostBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
+router.put('/:postId/like-status',  authMiddlewareJWT, ...createLikeForPostBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     // @ts-ignore
     const post = await postQueryRepo.findById(req.context?.user?.id, req.params.postId);
     if (!post) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();

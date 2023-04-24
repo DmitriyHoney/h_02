@@ -48,12 +48,12 @@ router.post('/:blogId/posts', authMiddleware, ...validatorMiddlewarePosts, valid
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
     }
-    const id = await postsDomain.create({
+    const createdRow = await postsDomain.create({
         ...req.body,
         blogId: req.params.blogId,
     });
     // @ts-ignore
-    const result = await postQueryRepo.findById(id);
+    const result = await postQueryRepo.findById(createdRow.id);
     if (!result) {
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;

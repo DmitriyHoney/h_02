@@ -53,9 +53,9 @@ router.post('/:blogId/posts', auth_middleware_1.authMiddleware, ...posts_middlew
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
     }
-    const id = yield posts_domain_1.default.create(Object.assign(Object.assign({}, req.body), { blogId: req.params.blogId }));
+    const createdRow = yield posts_domain_1.default.create(Object.assign(Object.assign({}, req.body), { blogId: req.params.blogId }));
     // @ts-ignore
-    const result = yield posts_repositry_1.postQueryRepo.findById(id);
+    const result = yield posts_repositry_1.postQueryRepo.findById(createdRow.id);
     if (!result) {
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;

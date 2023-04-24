@@ -45,14 +45,14 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
                         login: e.login,
                         addedAt: e.addedAt,
                     }
-                })
+                }).reverse()
                 : res.extendedLikesInfo.newestLikes.map((e) => {
                     return {
                         userId: e.userId,
                         login: e.login,
                         addedAt: e.addedAt,
                     }
-                })
+                }).reverse()
         };
         // @ts-ignore
         res.id = res._id;
@@ -105,14 +105,14 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
                                 login: e.login,
                                 addedAt: e.addedAt,
                             }
-                        })
+                        }).reverse()
                         : res.extendedLikesInfo.newestLikes.map((e) => {
                             return {
                                 userId: e.userId,
                                 login: e.login,
                                 addedAt: e.addedAt,
                             }
-                        })
+                        }).reverse()
                 };
                 return {
                     ...i,

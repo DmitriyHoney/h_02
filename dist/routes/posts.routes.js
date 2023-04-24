@@ -38,6 +38,7 @@ router.get('/:id/', auth_middleware_1.getUserByRefreshJWT, (req, res) => __await
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
     }
+    console.log('result', result);
     res.status(types_1.HTTP_STATUSES.OK_200).send(result);
 }));
 router.get('/:postId/comments', auth_middleware_1.getUserByRefreshJWT, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

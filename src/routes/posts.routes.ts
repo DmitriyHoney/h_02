@@ -30,6 +30,7 @@ router.get('/:id/', getUserByRefreshJWT, async (req: Request, res: Response) => 
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
     }
+    console.log('result', result);
     res.status(HTTP_STATUSES.OK_200).send(result);
 });
 

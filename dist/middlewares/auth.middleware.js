@@ -118,6 +118,7 @@ const authMiddlewareJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     if (payload) {
         if (!req.context)
             req.context = { user: null, verifiedToken: null, userIP: undefined };
+        console.log(555, payload.userId);
         // @ts-ignore
         req.context.user = yield users_repositry_1.usersQueryRepo.findById(payload.userId);
         // req.context.deviceId = await usersQueryRepo.findById(payload.deviceId);

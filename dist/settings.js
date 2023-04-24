@@ -23,6 +23,10 @@ app.use((0, cookie_parser_1.default)());
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.set('trust proxy', true);
+app.use((req, res, next) => {
+    console.log(req.method, req.url, req.body);
+    next();
+});
 app.get('/', (req, res) => res.send('Hello, world!'));
 app.use('/api/users', users_routes_1.default);
 app.use('/api/blogs', blogs_routes_1.default);

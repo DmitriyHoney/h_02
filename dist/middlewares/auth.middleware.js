@@ -107,7 +107,7 @@ const authMiddleware = (req, res, next) => {
 exports.authMiddleware = authMiddleware;
 // продвинутая jwt проверка
 const authMiddlewareJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     if (!req.headers.authorization) {
         if ((_a = req === null || req === void 0 ? void 0 : req.context) === null || _a === void 0 ? void 0 : _a.user)
             req.context.user = null;
@@ -119,23 +119,26 @@ const authMiddlewareJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         if (!req.context)
             req.context = { user: null, verifiedToken: null, userIP: undefined };
         // @ts-ignore
-        const usr = yield users_repositry_1.usersQueryRepo.findById(payload.userId);
-        req.context.user = usr;
+        req.context.user = yield users_repositry_1.usersQueryRepo.findById(payload.userId);
+        if ((_b = req === null || req === void 0 ? void 0 : req.context) === null || _b === void 0 ? void 0 : _b.user) {
+            req.context.user = null;
+            return res.status(types_1.HTTP_STATUSES.NOT_AUTHORIZED_401).send();
+        }
         // @ts-ignore
         console.log(555, payload.userId, usr, req.context.user);
         // req.context.deviceId = await usersQueryRepo.findById(payload.deviceId);
         next();
     }
     else {
-        if ((_b = req === null || req === void 0 ? void 0 : req.context) === null || _b === void 0 ? void 0 : _b.user)
+        if ((_c = req === null || req === void 0 ? void 0 : req.context) === null || _c === void 0 ? void 0 : _c.user)
             req.context.user = null;
         return res.status(types_1.HTTP_STATUSES.NOT_AUTHORIZED_401).send();
     }
 });
 exports.authMiddlewareJWT = authMiddlewareJWT;
 const authCheckValidRefreshJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
-    const refreshToken = (_c = req.cookies) === null || _c === void 0 ? void 0 : _c.refreshToken;
+    var _d;
+    const refreshToken = (_d = req.cookies) === null || _d === void 0 ? void 0 : _d.refreshToken;
     if (!refreshToken)
         return res.status(types_1.HTTP_STATUSES.NOT_AUTHORIZED_401).send();
     const verifiedToken = jwt_service_1.jwtService.verifyToken(refreshToken);
@@ -155,9 +158,9 @@ const authCheckValidRefreshJWT = (req, res, next) => __awaiter(void 0, void 0, v
 });
 exports.authCheckValidRefreshJWT = authCheckValidRefreshJWT;
 const getUserByRefreshJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e;
-    const refreshToken = (_d = req.cookies) === null || _d === void 0 ? void 0 : _d.refreshToken;
-    if (!refreshToken && ((_e = req.headers) === null || _e === void 0 ? void 0 : _e.authorization)) {
+    var _e, _f;
+    const refreshToken = (_e = req.cookies) === null || _e === void 0 ? void 0 : _e.refreshToken;
+    if (!refreshToken && ((_f = req.headers) === null || _f === void 0 ? void 0 : _f.authorization)) {
         // @ts-ignore
         const token = req.headers.authorization.split(' ')[1];
         const payload = jwt_service_1.jwtService.verifyToken(token);

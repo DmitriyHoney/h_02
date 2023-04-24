@@ -16,10 +16,10 @@ import { commentsDomain } from "../controllers/comments.controllers";
 
 const router = Router();
 
-router.get('/', async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Response) => {
+router.get('/', getUserByRefreshJWT, async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
     // @ts-ignore
-    const result = await postQueryRepo.find(req.context.user.id, pageSize, pageNumber, sortBy, sortDirection, {});
+    const result = await postQueryRepo.find(req.context?.user?.id, pageSize, pageNumber, sortBy, sortDirection, {});
     res.send(result);
 });
 

@@ -106,7 +106,8 @@ export const authMiddlewareJWT = async (req: Request, res: Response, next: NextF
   const payload = jwtService.verifyToken(token);
   if (payload) {
     if (!req.context) req.context = { user: null, verifiedToken: null, userIP: undefined };
-    console.log(555, payload.userId);
+    // @ts-ignore
+    console.log(555, payload);
     // @ts-ignore
     req.context.user = await usersQueryRepo.findById(payload.userId);
     // req.context.deviceId = await usersQueryRepo.findById(payload.deviceId);

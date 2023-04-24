@@ -61,7 +61,7 @@ router.post('/', auth_middleware_1.authMiddleware, ...posts_middleware_1.createP
     const result = yield posts_repositry_1.postQueryRepo.findById((_h = (_g = req.context) === null || _g === void 0 ? void 0 : _g.user) === null || _h === void 0 ? void 0 : _h.id, id.toString());
     res.status(types_1.HTTP_STATUSES.CREATED_201).send(result);
 }));
-router.put('/:postId/like-status', auth_middleware_1.authMiddlewareJWT, auth_middleware_1.getUserByRefreshJWT, ...posts_middleware_1.createLikeForPostBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/:postId/like-status', auth_middleware_1.authMiddlewareJWT, ...posts_middleware_1.createLikeForPostBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _j, _k, _l, _m, _o, _p;
     // @ts-ignore
     const post = yield posts_repositry_1.postQueryRepo.findById((_k = (_j = req.context) === null || _j === void 0 ? void 0 : _j.user) === null || _k === void 0 ? void 0 : _k.id, req.params.postId);
@@ -93,7 +93,7 @@ router.put('/:postId/like-status', auth_middleware_1.authMiddlewareJWT, auth_mid
     likesInfo.newestLikes = likesInfo.newestLikes
         // @ts-ignore
         .filter((i) => { var _a; return i.userId !== ((_a = req.context.user) === null || _a === void 0 ? void 0 : _a.id); });
-    if (bodyStatus !== types_1.LikeStatus.NONE) {
+    if (bodyStatus !== types_1.LikeStatus.NONE && bodyStatus) {
         const item = {
             // @ts-ignore
             userId: (_o = req.context.user) === null || _o === void 0 ? void 0 : _o.id,

@@ -21,9 +21,10 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
         return await super.find(pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
     }
     // @ts-ignore
-    async findById(userId: string | number | undefined = 'none', _id: ObjectId | string, excludeFields: object = {}) {
+    async findById(userId: string | number | undefined, _id: ObjectId | string, excludeFields: object = {}) {
         const i = await super.findById(_id, excludeFields);
         if (!i) return null;
+        if (!userId) userId = 'none';
 
 
         const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
@@ -71,13 +72,14 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
     }
     // @ts-ignore
     async find(
-        userId: string | number | undefined  = 'none',
+        userId: string | number | undefined,
         pageSize?: string,
         pageNumber?: string,
         sortBy?: string,
         sortDirection?: string,
         filters?: {},
     ) {
+        if (!userId) userId = 'none';
         const res = await super.find(
             pageSize,
             pageNumber,

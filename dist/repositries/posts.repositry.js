@@ -29,7 +29,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
         });
     }
     // @ts-ignore
-    findById(userId = 'none', _id, excludeFields = {}) {
+    findById(userId, _id, excludeFields = {}) {
         const _super = Object.create(null, {
             findById: { get: () => super.findById }
         });
@@ -37,6 +37,8 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
             const i = yield _super.findById.call(this, _id, excludeFields);
             if (!i)
                 return null;
+            if (!userId)
+                userId = 'none';
             const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
             const myStatus = userLikeStatus
                 ? userLikeStatus.status
@@ -77,11 +79,13 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
         });
     }
     // @ts-ignore
-    find(userId = 'none', pageSize, pageNumber, sortBy, sortDirection, filters) {
+    find(userId, pageSize, pageNumber, sortBy, sortDirection, filters) {
         const _super = Object.create(null, {
             find: { get: () => super.find }
         });
         return __awaiter(this, void 0, void 0, function* () {
+            if (!userId)
+                userId = 'none';
             const res = yield _super.find.call(this, pageSize, pageNumber, sortBy, sortDirection, filters, {
                 postId: 0,
             });

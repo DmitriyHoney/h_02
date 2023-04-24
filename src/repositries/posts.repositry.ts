@@ -41,7 +41,6 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
             // @ts-ignore
             newestLikes: res.extendedLikesInfo.newestLikes.length > 3
                 ? res.extendedLikesInfo.newestLikes
-                    .filter((u) => u?.status === LikeStatus.LIKE)
                     .slice(1)
                     .slice(-3)
                     .map((e) => {
@@ -52,7 +51,6 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
                     }
                 }).reverse()
                 : res.extendedLikesInfo.newestLikes
-                    .filter((u) => u?.status === LikeStatus.LIKE)
                     .map((e) => {
                         return {
                             userId: e.userId,
@@ -108,7 +106,6 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
                     // @ts-ignore
                     newestLikes: res.extendedLikesInfo.newestLikes.length > 3
                         ? res.extendedLikesInfo.newestLikes
-                            .filter((u) => u?.status === LikeStatus.LIKE)
                             .slice(1)
                             .slice(-3)
                             .map((e) => {
@@ -120,7 +117,6 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
                         }).reverse()
                         // @ts-ignore
                         : res.extendedLikesInfo.newestLikes
-                            .filter((u) => u?.status === LikeStatus.LIKE)
                             .map((e) => {
                                 return {
                                     userId: e.userId,

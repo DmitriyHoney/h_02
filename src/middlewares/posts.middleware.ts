@@ -1,5 +1,5 @@
-import { body } from 'express-validator';
-import { blogsQueryRepo } from '../repositries/blogs.repositry'
+import {body} from 'express-validator';
+import {blogsQueryRepo} from '../repositries/blogs.repositry'
 import {LikeStatus, VALIDATION_ERROR_MSG} from '../types/types';
 
 export const createLikeForPostBody = [
@@ -9,7 +9,7 @@ export const createLikeForPostBody = [
         .trim()
         .notEmpty().withMessage(VALIDATION_ERROR_MSG.REQUIRED).bail()
         .custom(async (v, { req }) => {
-            const isValid = Object.values(LikeStatus).includes(req.body.likeStatus);
+            const isValid = [LikeStatus.LIKE, LikeStatus.DISLIKE, LikeStatus.NONE].includes(req.body.likeStatus);
             if (!isValid) throw new Error(VALIDATION_ERROR_MSG.OUT_OF_RANGE);
             return true;
         }),

@@ -20,7 +20,7 @@ exports.createLikeForPostBody = [
         .trim()
         .notEmpty().withMessage(types_1.VALIDATION_ERROR_MSG.REQUIRED).bail()
         .custom((v, { req }) => __awaiter(void 0, void 0, void 0, function* () {
-        const isValid = Object.values(types_1.LikeStatus).includes(req.body.likeStatus);
+        const isValid = [types_1.LikeStatus.LIKE, types_1.LikeStatus.DISLIKE, types_1.LikeStatus.NONE].includes(req.body.likeStatus);
         if (!isValid)
             throw new Error(types_1.VALIDATION_ERROR_MSG.OUT_OF_RANGE);
         return true;

@@ -50,17 +50,11 @@ router.get('/:blogId/posts', (req, res) => __awaiter(void 0, void 0, void 0, fun
 router.post('/:blogId/posts', auth_middleware_1.authMiddleware, ...posts_middleware_1.createPostsBodyWithoutBlogId, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result1 = yield blogs_repositry_1.blogsQueryRepo.findById(req.params.blogId);
     if (!result1) {
-        res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found blog with id ' + req.params.blogId);
-        return;
-    }
-    const createdRow = yield posts_domain_1.default.create(Object.assign(Object.assign({}, req.body), { blogId: req.params.blogId }));
-    // @ts-ignore
-    const result = yield posts_repositry_1.postQueryRepo.findById(createdRow.id);
-    if (!result) {
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
     }
-    res.status(types_1.HTTP_STATUSES.CREATED_201).send(result);
+    const createdRow = yield posts_domain_1.default.create(Object.assign(Object.assign({}, req.body), { blogId: req.params.blogId }));
+    res.status(types_1.HTTP_STATUSES.CREATED_201).send(createdRow);
 }));
 router.post('/', auth_middleware_1.authMiddleware, ...blogs_middleware_1.createBlogsBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = yield blogs_domain_1.default.create(req.body);

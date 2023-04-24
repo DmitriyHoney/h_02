@@ -50,7 +50,7 @@ router.get('/:blogId/posts', (req, res) => __awaiter(void 0, void 0, void 0, fun
 router.post('/:blogId/posts', auth_middleware_1.authMiddleware, ...posts_middleware_1.createPostsBodyWithoutBlogId, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result1 = yield blogs_repositry_1.blogsQueryRepo.findById(req.params.blogId);
     if (!result1) {
-        res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+        res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found blog with id ' + req.params.blogId);
         return;
     }
     const createdRow = yield posts_domain_1.default.create(Object.assign(Object.assign({}, req.body), { blogId: req.params.blogId }));

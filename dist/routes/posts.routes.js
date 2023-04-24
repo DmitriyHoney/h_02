@@ -62,7 +62,7 @@ router.post('/', auth_middleware_1.authMiddleware, ...posts_middleware_1.createP
     res.status(types_1.HTTP_STATUSES.CREATED_201).send(result);
 }));
 router.put('/:postId/like-status', auth_middleware_1.authMiddlewareJWT, ...posts_middleware_1.createLikeForPostBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _j, _k, _l, _m, _o;
+    var _j, _k, _l, _m;
     // @ts-ignore
     const post = yield posts_repositry_1.postQueryRepo.findById((_k = (_j = req.context) === null || _j === void 0 ? void 0 : _j.user) === null || _k === void 0 ? void 0 : _k.id, req.params.postId);
     if (!post)
@@ -72,7 +72,7 @@ router.put('/:postId/like-status', auth_middleware_1.authMiddlewareJWT, ...posts
     if (!likesInfo.newestLikes)
         likesInfo.newestLikes = [];
     // @ts-ignore
-    const userId = (_l = req.context.user) === null || _l === void 0 ? void 0 : _l.id.toString();
+    const userId = req.context.user.id;
     // @ts-ignore
     const existItemLikeStatus = likesInfo === null || likesInfo === void 0 ? void 0 : likesInfo.newestLikes.find((i) => i.userId === userId);
     const oldStatus = (existItemLikeStatus === null || existItemLikeStatus === void 0 ? void 0 : existItemLikeStatus.status) || types_1.LikeStatus.NONE;
@@ -92,12 +92,12 @@ router.put('/:postId/like-status', auth_middleware_1.authMiddlewareJWT, ...posts
     // @ts-ignore
     likesInfo.newestLikes = likesInfo.newestLikes
         // @ts-ignore
-        .filter((i) => { var _a; return i.userId !== ((_a = req.context.user) === null || _a === void 0 ? void 0 : _a.id.toString()); });
+        .filter((i) => { var _a; return i.userId !== ((_a = req.context.user) === null || _a === void 0 ? void 0 : _a.id); });
     if (bodyStatus !== types_1.LikeStatus.NONE) {
         const item = {
             // @ts-ignore
-            userId: (_m = req.context.user) === null || _m === void 0 ? void 0 : _m.id,
-            login: ((_o = req.context.user) === null || _o === void 0 ? void 0 : _o.login) || '',
+            userId: (_l = req.context.user) === null || _l === void 0 ? void 0 : _l.id,
+            login: ((_m = req.context.user) === null || _m === void 0 ? void 0 : _m.login) || '',
             status: bodyStatus,
             addedAt: new Date().toISOString()
         };
@@ -112,18 +112,18 @@ router.put('/:postId/like-status', auth_middleware_1.authMiddlewareJWT, ...posts
         : res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send();
 }));
 router.post('/:postId/comments', auth_middleware_1.authMiddlewareJWT, ...comments_middleware_1.createCommentsBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _p, _q, _r;
+    var _o, _p, _q;
     // @ts-ignore
     const post = yield posts_repositry_1.postQueryRepo.findById(req.context.user.id, req.params.postId);
     if (!post)
         return res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send();
     const createdId = yield comments_controllers_1.commentsDomain.create(Object.assign(Object.assign({}, req.body), { postId: req.params.postId, commentatorInfo: {
             // @ts-ignore
-            userId: (_p = req.context.user) === null || _p === void 0 ? void 0 : _p.id,
-            userLogin: (_q = req.context.user) === null || _q === void 0 ? void 0 : _q.login
+            userId: (_o = req.context.user) === null || _o === void 0 ? void 0 : _o.id,
+            userLogin: (_p = req.context.user) === null || _p === void 0 ? void 0 : _p.login
         } }));
     // @ts-ignore
-    const result = yield comments_repositry_1.commentsQueryRepo.findById((_r = req.context.user) === null || _r === void 0 ? void 0 : _r.id, createdId);
+    const result = yield comments_repositry_1.commentsQueryRepo.findById((_q = req.context.user) === null || _q === void 0 ? void 0 : _q.id, createdId);
     res.status(types_1.HTTP_STATUSES.CREATED_201).send(result);
 }));
 router.put('/:id/', auth_middleware_1.authMiddleware, ...posts_middleware_1.createPostsBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

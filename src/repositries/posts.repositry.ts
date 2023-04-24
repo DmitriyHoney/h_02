@@ -21,7 +21,7 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
         return await super.find(pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
     }
     // @ts-ignore
-    async findById(userId: string | number | undefined, _id: ObjectId | string, excludeFields: object = {}) {
+    async findById(userId: string | number | undefined = 'none', _id: ObjectId | string, excludeFields: object = {}) {
         const i = await super.findById(_id, excludeFields);
         if (!i) return null;
 
@@ -40,7 +40,7 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
             // @ts-ignore
             newestLikes: res.extendedLikesInfo.newestLikes.length > 3
                 ? res.extendedLikesInfo.newestLikes
-                    .filter((u) => u?.status === LikeStatus.LIKE)
+                    .filter((u) => u?.userId !== userId && u?.status === LikeStatus.LIKE)
                     .slice(1)
                     .slice(-3)
                     .map((e) => {
@@ -51,7 +51,7 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
                     }
                 }).reverse()
                 : res.extendedLikesInfo.newestLikes
-                    .filter((u) => u?.status === LikeStatus.LIKE)
+                    .filter((u) => u?.userId !== userId && u?.status === LikeStatus.LIKE)
                     .map((e) => {
                         return {
                             userId: e.userId,
@@ -71,7 +71,7 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
     }
     // @ts-ignore
     async find(
-        userId: string | number | undefined,
+        userId: string | number | undefined  = 'none',
         pageSize?: string,
         pageNumber?: string,
         sortBy?: string,
@@ -106,7 +106,7 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
                     // @ts-ignore
                     newestLikes: res.extendedLikesInfo.newestLikes.length > 3
                         ? res.extendedLikesInfo.newestLikes
-                            .filter((u) => u?.status === LikeStatus.LIKE)
+                            .filter((u) => u?.userId !== userId && u?.status === LikeStatus.LIKE)
                             .slice(1)
                             .slice(-3)
                             .map((e) => {
@@ -118,7 +118,7 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
                         }).reverse()
                         // @ts-ignore
                         : res.extendedLikesInfo.newestLikes
-                            .filter((u) => u?.status === LikeStatus.LIKE)
+                            .filter((u) => u?.userId !== userId && u?.status === LikeStatus.LIKE)
                             .map((e) => {
                                 return {
                                     userId: e.userId,

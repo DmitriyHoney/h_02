@@ -64,7 +64,7 @@ router.put('/:postId/like-status',  authMiddlewareJWT, ...createLikeForPostBody,
     // @ts-ignore
     if (!likesInfo.newestLikes) likesInfo.newestLikes = [];
     // @ts-ignore
-    const userId = req.context.user.id;
+    const userId = req.context?.user?.id;
     // @ts-ignore
     const existItemLikeStatus: any = likesInfo?.newestLikes.find((i) => i.userId === userId);
     const oldStatus = existItemLikeStatus?.status || LikeStatus.NONE;

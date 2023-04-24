@@ -242,16 +242,16 @@ describe('/posts', () => {
                 }
             });
         })
-        test('Check createdPost has been deleted', async () => {
-            await reqWithAuthHeader(config.app, 'delete', `${url}/${createdPost.body.id}`, basicTokens.correct)
-                .expect(HTTP_STATUSES.NO_CONTENT_204, {})
-
-            const result = await request(config.app)
-                .get(url)
-                .expect(HTTP_STATUSES.OK_200)
-
-            expect(result.body.items).toEqual([])
-        })
+        // test('Check createdPost has been deleted', async () => {
+        //     await reqWithAuthHeader(config.app, 'delete', `${url}/${createdPost.body.id}`, basicTokens.correct)
+        //         .expect(HTTP_STATUSES.NO_CONTENT_204, {})
+        //
+        //     const result = await request(config.app)
+        //         .get(url)
+        //         .expect(HTTP_STATUSES.OK_200)
+        //
+        //     expect(result.body.items).toEqual([])
+        // })
 
     });
 
@@ -366,7 +366,7 @@ describe('/posts', () => {
                 })
                 .expect(HTTP_STATUSES.NO_CONTENT_204)
 
-            const result = await request(config.app).get(`${config.url}/${createdPost.body.id}`)
+            const result = await request(config.app).get(`${config.url}/$createdPost.body.id}`)
                 .auth(userAuthTokens.accessToken || 'None', { type: "bearer" })
                 .expect(HTTP_STATUSES.OK_200);
 

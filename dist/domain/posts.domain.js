@@ -10,9 +10,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const posts_repositry_1 = require("../repositries/posts.repositry");
+const types_1 = require("../types/types");
 exports.default = {
     create: (body) => __awaiter(void 0, void 0, void 0, function* () {
-        return yield posts_repositry_1.postCommandRepo.create(Object.assign(Object.assign({}, body), { blogName: body.blogName ? body.blogName : '' }));
+        return yield posts_repositry_1.postCommandRepo.create(Object.assign(Object.assign({}, body), { blogName: body.blogName ? body.blogName : '', extendedLikesInfo: {
+                likesCount: 0,
+                dislikesCount: 0,
+                myStatus: types_1.LikeStatus.NONE,
+                newestLikes: []
+            } }));
     }),
     update: (id, body) => __awaiter(void 0, void 0, void 0, function* () { return yield posts_repositry_1.postCommandRepo.update(id, body); }),
     deleteOne: (id) => __awaiter(void 0, void 0, void 0, function* () { return yield posts_repositry_1.postCommandRepo.delete(id); }),

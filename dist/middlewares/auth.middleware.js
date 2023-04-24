@@ -167,6 +167,7 @@ const getUserByRefreshJWT = (req, res, next) => __awaiter(void 0, void 0, void 0
         }
         return next();
     }
+    console.log(1111111, req.cookies.refreshToken);
     const verifiedToken = jwt_service_1.jwtService.verifyToken(refreshToken);
     if (!verifiedToken)
         return next();

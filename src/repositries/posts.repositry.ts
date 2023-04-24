@@ -1,6 +1,7 @@
 import { CommandRepo, QueryRepo } from './base.repositry';
-import { PostModelType, Post } from '../types/types';
+import {PostModelType, Post, LikeStatus, CommentModelType} from '../types/types';
 import { PostModel } from '../db/collections/posts.collection';
+import {ObjectId} from "mongoose";
 
 
 class PostCommandRepo extends CommandRepo<PostModelType, Post> {}
@@ -10,7 +11,7 @@ export const postCommandRepo = new PostCommandRepo(PostModel);
 
 class PostQueryRepo extends QueryRepo<PostModelType> {
     async findByBlogId(
-        pageSize?: string, 
+        pageSize?: string,
         pageNumber?: string,
         sortBy?: string,
         sortDirection?: string,
@@ -18,6 +19,69 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
         blogId: string,
     ) {
         return await super.find(pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
+    }
+    // @ts-ignore
+    async findById(userId: string | number | undefined, _id: ObjectId | string, excludeFields: object = {}) {
+        const i = await super.findById(_id, excludeFields);
+        if (!i) return null;
+
+
+        const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
+
+        const myStatus = userLikeStatus
+            ? userLikeStatus.status
+            : LikeStatus.NONE;
+
+        let res = i.toObject();
+        // @ts-ignore
+        res.extendedLikesInfo = { ...res.extendedLikesInfo, myStatus, newestLikes: res.extendedLikesInfo.newestLikes.length > 3 ? res.extendedLikesInfo.newestLikes.slice(1).slice(-3) : res.extendedLikesInfo.newestLikes };
+        // @ts-ignore
+        res.id = res._id;
+        // @ts-ignore
+        delete res._id;
+        // @ts-ignore
+        delete res.__v;
+        // @ts-ignore
+        return res;
+    }
+    // @ts-ignore
+    async find(
+        userId: string | number | undefined,
+        pageSize?: string,
+        pageNumber?: string,
+        sortBy?: string,
+        sortDirection?: string,
+        filters?: {},
+    ) {
+        const res = await super.find(
+            pageSize,
+            pageNumber,
+            sortBy,
+            sortDirection,
+            filters,
+            {
+                postId: 0,
+            },
+        );
+        return {
+            // @ts-ignore
+            ...res,
+            // @ts-ignore
+            items: res.items.map((i: PostModelType) => {
+                const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
+                const myStatus = userLikeStatus
+                    ? userLikeStatus.status
+                    : LikeStatus.NONE;
+
+                let res = i;
+                // @ts-ignore
+                res.extendedLikesInfo = { ...res.extendedLikesInfo, myStatus, newestLikes: res.extendedLikesInfo.newestLikes.length > 3 ? res.extendedLikesInfo.newestLikes.slice(1).slice(-3) : res.extendedLikesInfo.newestLikes };
+                return {
+                    ...i,
+                    extendedLikesInfo: res.extendedLikesInfo
+                }
+            })
+        }
     }
 }
 // @ts-ignore

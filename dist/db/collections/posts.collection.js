@@ -22,6 +22,12 @@ const postSchema = new mongoose_1.default.Schema({
     content: String,
     blogId: String,
     blogName: { type: String, require: false },
+    extendedLikesInfo: {
+        likesCount: Number,
+        dislikesCount: Number,
+        myStatus: String,
+        newestLikes: [],
+    }
 }, { timestamps: true });
 postSchema.method('toJSON', function () {
     const _a = this.toObject(), { __v, _id } = _a, object = __rest(_a, ["__v", "_id"]);

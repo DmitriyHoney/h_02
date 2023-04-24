@@ -18,12 +18,14 @@ const router = Router();
 
 router.get('/', async (req: Request<{}, {}, {}, BaseGetQueryParams>, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
-    const result = await postQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, {});
+    // @ts-ignore
+    const result = await postQueryRepo.find(req.context.user.id, pageSize, pageNumber, sortBy, sortDirection, {});
     res.send(result);
 });
 
-router.get('/:id/', async (req: Request, res: Response) => {
-    const result = await postQueryRepo.findById(req.params.id);
+router.get('/:id/', getUserByRefreshJWT, async (req: Request, res: Response) => {
+    // @ts-ignore
+    const result = await postQueryRepo.findById(req.context?.user?.id, req.params.id);
     if (!result) {
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
@@ -35,7 +37,8 @@ router.get('/:id/', async (req: Request, res: Response) => {
 router.get('/:postId/comments', getUserByRefreshJWT, async (req: Request<{ postId?: string}, {}, {}, BaseGetQueryParams>, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
 
-    const isPostExist = await postQueryRepo.findById(req.params.postId || 'undefined');
+    // @ts-ignore
+    const isPostExist = await postQueryRepo.findById(req.context?.user?.id, req.params.postId || 'undefined');
     if (!isPostExist) return res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
     // @ts-ignore
     const result = await commentsQueryRepo.find(req.context.user.id, pageSize, pageNumber, sortBy, sortDirection, { postId: req.params.postId });
@@ -46,12 +49,14 @@ router.get('/:postId/comments', getUserByRefreshJWT, async (req: Request<{ postI
 
 router.post('/',  authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const id = await postsDomain.create(req.body);
-    const result = await postQueryRepo.findById(id.toString());
+    // @ts-ignore
+    const result = await postQueryRepo.findById(req.context?.user?.id, id.toString());
     res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 
 router.put('/:postId/like-status',  authMiddlewareJWT, ...createLikeForPostBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
-    const post = await postQueryRepo.findById(req.params.postId);
+    // @ts-ignore
+    const post = await postQueryRepo.findById(req.context?.user?.id, req.params.postId);
     if (!post) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
 
     let likesInfo = post.extendedLikesInfo;
@@ -90,17 +95,18 @@ router.put('/:postId/like-status',  authMiddlewareJWT, ...createLikeForPostBody,
         likesInfo.newestLikes.push(item);
     }
 
-    const isUpdated = await postCommandRepo.update(req.params.id, {
-        // @ts-ignore
-        likesInfo
+    // @ts-ignore
+    const isUpdated = await postCommandRepo.update(req.params.postId, {
+        extendedLikesInfo: likesInfo
     });
-    isUpdated
+    return isUpdated
         ? res.status(HTTP_STATUSES.NO_CONTENT_204).send()
         : res.status(HTTP_STATUSES.NOT_FOUND_404).send();
 });
 
 router.post('/:postId/comments',  authMiddlewareJWT, ...createCommentsBody, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
-    const post = await postQueryRepo.findById(req.params.postId);
+    // @ts-ignore
+    const post = await postQueryRepo.findById(req.context.user.id, req.params.postId);
     if (!post) return res.status(HTTP_STATUSES.NOT_FOUND_404).send();
     
     const createdId = await commentsDomain.create({ 

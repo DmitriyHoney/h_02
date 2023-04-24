@@ -25,11 +25,14 @@ const comments_controllers_1 = require("../controllers/comments.controllers");
 const router = (0, express_1.Router)();
 router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
-    const result = yield posts_repositry_1.postQueryRepo.find(pageSize, pageNumber, sortBy, sortDirection, {});
+    // @ts-ignore
+    const result = yield posts_repositry_1.postQueryRepo.find(req.context.user.id, pageSize, pageNumber, sortBy, sortDirection, {});
     res.send(result);
 }));
-router.get('/:id/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield posts_repositry_1.postQueryRepo.findById(req.params.id);
+router.get('/:id/', auth_middleware_1.getUserByRefreshJWT, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    // @ts-ignore
+    const result = yield posts_repositry_1.postQueryRepo.findById((_b = (_a = req.context) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.id, req.params.id);
     if (!result) {
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
@@ -37,8 +40,10 @@ router.get('/:id/', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     res.status(types_1.HTTP_STATUSES.OK_200).send(result);
 }));
 router.get('/:postId/comments', auth_middleware_1.getUserByRefreshJWT, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d;
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
-    const isPostExist = yield posts_repositry_1.postQueryRepo.findById(req.params.postId || 'undefined');
+    // @ts-ignore
+    const isPostExist = yield posts_repositry_1.postQueryRepo.findById((_d = (_c = req.context) === null || _c === void 0 ? void 0 : _c.user) === null || _d === void 0 ? void 0 : _d.id, req.params.postId || 'undefined');
     if (!isPostExist)
         return res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
     // @ts-ignore
@@ -48,22 +53,75 @@ router.get('/:postId/comments', auth_middleware_1.getUserByRefreshJWT, (req, res
     res.status(types_1.HTTP_STATUSES.OK_200).send(result);
 }));
 router.post('/', auth_middleware_1.authMiddleware, ...posts_middleware_1.createPostsBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e, _f;
     const id = yield posts_domain_1.default.create(req.body);
-    const result = yield posts_repositry_1.postQueryRepo.findById(id.toString());
+    // @ts-ignore
+    const result = yield posts_repositry_1.postQueryRepo.findById((_f = (_e = req.context) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.id, id.toString());
     res.status(types_1.HTTP_STATUSES.CREATED_201).send(result);
 }));
+router.put('/:postId/like-status', auth_middleware_1.authMiddlewareJWT, ...posts_middleware_1.createLikeForPostBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _g, _h, _j, _k, _l;
+    // @ts-ignore
+    const post = yield posts_repositry_1.postQueryRepo.findById((_h = (_g = req.context) === null || _g === void 0 ? void 0 : _g.user) === null || _h === void 0 ? void 0 : _h.id, req.params.postId);
+    if (!post)
+        return res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send();
+    let likesInfo = post.extendedLikesInfo;
+    // @ts-ignore
+    if (!likesInfo.newestLikes)
+        likesInfo.newestLikes = [];
+    // @ts-ignore
+    const userId = (_j = req.context.user) === null || _j === void 0 ? void 0 : _j.id.toString();
+    // @ts-ignore
+    const existItemLikeStatus = likesInfo === null || likesInfo === void 0 ? void 0 : likesInfo.newestLikes.find((i) => i.userId === userId);
+    const oldStatus = (existItemLikeStatus === null || existItemLikeStatus === void 0 ? void 0 : existItemLikeStatus.status) || types_1.LikeStatus.NONE;
+    // @ts-ignore
+    if (oldStatus === types_1.LikeStatus.LIKE)
+        likesInfo.likesCount--;
+    // @ts-ignore
+    if (oldStatus === types_1.LikeStatus.DISLIKE)
+        likesInfo.dislikesCount--;
+    const bodyStatus = req.body.likeStatus;
+    // @ts-ignore
+    if (bodyStatus === types_1.LikeStatus.LIKE)
+        likesInfo.likesCount++;
+    // @ts-ignore
+    else if (bodyStatus === types_1.LikeStatus.DISLIKE)
+        likesInfo.dislikesCount++;
+    // @ts-ignore
+    likesInfo.newestLikes = likesInfo.newestLikes
+        // @ts-ignore
+        .filter((i) => { var _a; return i.userId !== ((_a = req.context.user) === null || _a === void 0 ? void 0 : _a.id.toString()); });
+    if (bodyStatus !== types_1.LikeStatus.NONE) {
+        const item = {
+            // @ts-ignore
+            userId: (_k = req.context.user) === null || _k === void 0 ? void 0 : _k.id,
+            login: ((_l = req.context.user) === null || _l === void 0 ? void 0 : _l.login) || '',
+            status: bodyStatus,
+            addedAt: new Date().toISOString()
+        };
+        likesInfo.newestLikes.push(item);
+    }
+    // @ts-ignore
+    const isUpdated = yield posts_repositry_1.postCommandRepo.update(req.params.postId, {
+        extendedLikesInfo: likesInfo
+    });
+    return isUpdated
+        ? res.status(types_1.HTTP_STATUSES.NO_CONTENT_204).send()
+        : res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send();
+}));
 router.post('/:postId/comments', auth_middleware_1.authMiddlewareJWT, ...comments_middleware_1.createCommentsBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
-    const post = yield posts_repositry_1.postQueryRepo.findById(req.params.postId);
+    var _m, _o, _p;
+    // @ts-ignore
+    const post = yield posts_repositry_1.postQueryRepo.findById(req.context.user.id, req.params.postId);
     if (!post)
         return res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send();
     const createdId = yield comments_controllers_1.commentsDomain.create(Object.assign(Object.assign({}, req.body), { postId: req.params.postId, commentatorInfo: {
             // @ts-ignore
-            userId: (_a = req.context.user) === null || _a === void 0 ? void 0 : _a.id,
-            userLogin: (_b = req.context.user) === null || _b === void 0 ? void 0 : _b.login
+            userId: (_m = req.context.user) === null || _m === void 0 ? void 0 : _m.id,
+            userLogin: (_o = req.context.user) === null || _o === void 0 ? void 0 : _o.login
         } }));
     // @ts-ignore
-    const result = yield comments_repositry_1.commentsQueryRepo.findById((_c = req.context.user) === null || _c === void 0 ? void 0 : _c.id, createdId);
+    const result = yield comments_repositry_1.commentsQueryRepo.findById((_p = req.context.user) === null || _p === void 0 ? void 0 : _p.id, createdId);
     res.status(types_1.HTTP_STATUSES.CREATED_201).send(result);
 }));
 router.put('/:id/', auth_middleware_1.authMiddleware, ...posts_middleware_1.createPostsBody, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

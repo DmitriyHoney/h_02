@@ -52,7 +52,13 @@ router.post('/:blogId/posts', authMiddleware, ...validatorMiddlewarePosts, valid
         ...req.body,
         blogId: req.params.blogId,
     });
-    res.status(HTTP_STATUSES.CREATED_201).send(createdRow);
+    // @ts-ignore
+    const result = await postQueryRepo.findById(req.context?.user?.id, createdRow);
+    if (!result) {
+        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
+        return;
+    }
+    res.status(HTTP_STATUSES.CREATED_201).send(result);
 });
 
 router.post('/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {

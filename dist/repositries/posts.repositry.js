@@ -41,7 +41,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
             if (!userId)
                 userId = 'none';
             const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
-            const myStatus = userLikeStatus && userLikeStatus.status
+            const myStatus = userLikeStatus
                 ? userLikeStatus.status
                 : types_1.LikeStatus.NONE;
             let res = i.toObject();
@@ -92,7 +92,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                 // @ts-ignore
                 items: res.items.map((i) => {
                     const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
-                    const myStatus = userLikeStatus && userLikeStatus.status
+                    const myStatus = userLikeStatus
                         ? userLikeStatus.status
                         : types_1.LikeStatus.NONE;
                     let res = i;

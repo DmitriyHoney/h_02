@@ -34,7 +34,14 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
 
         let res = i.toObject();
         // @ts-ignore
-        res.extendedLikesInfo = { ...res.extendedLikesInfo, myStatus, newestLikes: res.extendedLikesInfo.newestLikes.length > 3 ? res.extendedLikesInfo.newestLikes.slice(1).slice(-3) : res.extendedLikesInfo.newestLikes };
+        res.extendedLikesInfo = {
+            ...res.extendedLikesInfo,
+            myStatus,
+            // @ts-ignore
+            newestLikes: res.extendedLikesInfo.newestLikes.length > 3
+                ? res.extendedLikesInfo.newestLikes.filter((u) => u?.userId !== userId).slice(1).slice(-3)
+                : res.extendedLikesInfo.newestLikes
+        };
         // @ts-ignore
         res.id = res._id;
         // @ts-ignore

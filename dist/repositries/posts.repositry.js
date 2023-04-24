@@ -43,7 +43,11 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                 : types_1.LikeStatus.NONE;
             let res = i.toObject();
             // @ts-ignore
-            res.extendedLikesInfo = Object.assign(Object.assign({}, res.extendedLikesInfo), { myStatus, newestLikes: res.extendedLikesInfo.newestLikes.length > 3 ? res.extendedLikesInfo.newestLikes.slice(1).slice(-3) : res.extendedLikesInfo.newestLikes });
+            res.extendedLikesInfo = Object.assign(Object.assign({}, res.extendedLikesInfo), { myStatus, 
+                // @ts-ignore
+                newestLikes: res.extendedLikesInfo.newestLikes.length > 3
+                    ? res.extendedLikesInfo.newestLikes.filter((u) => (u === null || u === void 0 ? void 0 : u.userId) !== userId).slice(1).slice(-3)
+                    : res.extendedLikesInfo.newestLikes });
             // @ts-ignore
             res.id = res._id;
             // @ts-ignore

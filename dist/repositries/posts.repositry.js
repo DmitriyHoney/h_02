@@ -52,14 +52,14 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                             login: e.login,
                             addedAt: e.addedAt,
                         };
-                    })
+                    }).reverse()
                     : res.extendedLikesInfo.newestLikes.map((e) => {
                         return {
                             userId: e.userId,
                             login: e.login,
                             addedAt: e.addedAt,
                         };
-                    }) });
+                    }).reverse() });
             // @ts-ignore
             res.id = res._id;
             // @ts-ignore
@@ -97,14 +97,14 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                                     login: e.login,
                                     addedAt: e.addedAt,
                                 };
-                            })
+                            }).reverse()
                             : res.extendedLikesInfo.newestLikes.map((e) => {
                                 return {
                                     userId: e.userId,
                                     login: e.login,
                                     addedAt: e.addedAt,
                                 };
-                            }) });
+                            }).reverse() });
                     return Object.assign(Object.assign({}, i), { extendedLikesInfo: res.extendedLikesInfo });
                 }) });
         });

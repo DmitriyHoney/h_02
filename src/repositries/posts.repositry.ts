@@ -39,8 +39,20 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
             myStatus,
             // @ts-ignore
             newestLikes: res.extendedLikesInfo.newestLikes.length > 3
-                ? res.extendedLikesInfo.newestLikes.filter((u) => u?.userId !== userId).slice(1).slice(-3)
-                : res.extendedLikesInfo.newestLikes
+                ? res.extendedLikesInfo.newestLikes.filter((u) => u?.userId !== userId).slice(1).slice(-3).map((e) => {
+                    return {
+                        userId: e.userId,
+                        login: e.login,
+                        addedAt: e.addedAt,
+                    }
+                })
+                : res.extendedLikesInfo.newestLikes.map((e) => {
+                    return {
+                        userId: e.userId,
+                        login: e.login,
+                        addedAt: e.addedAt,
+                    }
+                })
         };
         // @ts-ignore
         res.id = res._id;
@@ -82,7 +94,26 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
 
                 let res = i;
                 // @ts-ignore
-                res.extendedLikesInfo = { ...res.extendedLikesInfo, myStatus, newestLikes: res.extendedLikesInfo.newestLikes.length > 3 ? res.extendedLikesInfo.newestLikes.slice(1).slice(-3) : res.extendedLikesInfo.newestLikes };
+                res.extendedLikesInfo = {
+                    ...res.extendedLikesInfo,
+                    myStatus,
+                    // @ts-ignore
+                    newestLikes: res.extendedLikesInfo.newestLikes.length > 3
+                        ? res.extendedLikesInfo.newestLikes.filter((u) => u?.userId !== userId).slice(1).slice(-3).map((e) => {
+                            return {
+                                userId: e.userId,
+                                login: e.login,
+                                addedAt: e.addedAt,
+                            }
+                        })
+                        : res.extendedLikesInfo.newestLikes.map((e) => {
+                            return {
+                                userId: e.userId,
+                                login: e.login,
+                                addedAt: e.addedAt,
+                            }
+                        })
+                };
                 return {
                     ...i,
                     extendedLikesInfo: res.extendedLikesInfo

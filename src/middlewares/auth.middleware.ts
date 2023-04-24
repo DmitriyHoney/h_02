@@ -108,7 +108,7 @@ export const authMiddlewareJWT = async (req: Request, res: Response, next: NextF
     if (!req.context) req.context = { user: null, verifiedToken: null, userIP: undefined };
     // @ts-ignore
     req.context.user = await usersQueryRepo.findById(payload.userId);
-    if (req?.context?.user) {
+    if (!req.context.user) {
       req.context.user = null;
       return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401).send();
     }

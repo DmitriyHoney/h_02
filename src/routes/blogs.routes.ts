@@ -45,20 +45,14 @@ router.get('/:blogId/posts', async (req: Request, res: Response) => {
 router.post('/:blogId/posts', authMiddleware, ...validatorMiddlewarePosts, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const result1 = await blogsQueryRepo.findById(req.params.blogId);
     if (!result1) {
-        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found blog with id ' + req.params.blogId);
+        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
     }
     const createdRow = await postsDomain.create({
         ...req.body,
         blogId: req.params.blogId,
     });
-    // @ts-ignore
-    const result = await postQueryRepo.findById(createdRow.id);
-    if (!result) {
-        res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
-        return;
-    }
-    res.status(HTTP_STATUSES.CREATED_201).send(result);
+    res.status(HTTP_STATUSES.CREATED_201).send(createdRow);
 });
 
 router.post('/', authMiddleware, ...validatorMiddleware, validatorsErrorsMiddleware, async (req: Request, res: Response) => {

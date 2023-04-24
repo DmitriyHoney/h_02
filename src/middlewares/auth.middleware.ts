@@ -114,7 +114,7 @@ export const authMiddlewareJWT = async (req: Request, res: Response, next: NextF
     }
 
     // @ts-ignore
-    console.log(555, payload.userId, usr, req.context.user);
+    console.log(555, payload.userId, req.context.user);
     // req.context.deviceId = await usersQueryRepo.findById(payload.deviceId);
     next();
   } else {

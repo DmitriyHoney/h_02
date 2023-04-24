@@ -125,7 +125,7 @@ const authMiddlewareJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, 
             return res.status(types_1.HTTP_STATUSES.NOT_AUTHORIZED_401).send();
         }
         // @ts-ignore
-        console.log(555, payload.userId, usr, req.context.user);
+        console.log(555, payload.userId, req.context.user);
         // req.context.deviceId = await usersQueryRepo.findById(payload.deviceId);
         next();
     }

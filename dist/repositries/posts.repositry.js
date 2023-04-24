@@ -49,7 +49,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                 // @ts-ignore
                 newestLikes: res.extendedLikesInfo.newestLikes.length > 3
                     ? res.extendedLikesInfo.newestLikes
-                        .filter((u) => (u === null || u === void 0 ? void 0 : u.userId) !== userId && (u === null || u === void 0 ? void 0 : u.status) === types_1.LikeStatus.LIKE)
+                        .filter((u) => (u === null || u === void 0 ? void 0 : u.status) === types_1.LikeStatus.LIKE)
                         .slice(1)
                         .slice(-3)
                         .map((e) => {
@@ -60,7 +60,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                         };
                     }).reverse()
                     : res.extendedLikesInfo.newestLikes
-                        .filter((u) => (u === null || u === void 0 ? void 0 : u.userId) !== userId && (u === null || u === void 0 ? void 0 : u.status) === types_1.LikeStatus.LIKE)
+                        .filter((u) => (u === null || u === void 0 ? void 0 : u.status) === types_1.LikeStatus.LIKE)
                         .map((e) => {
                         return {
                             userId: e.userId,
@@ -102,7 +102,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                         // @ts-ignore
                         newestLikes: res.extendedLikesInfo.newestLikes.length > 3
                             ? res.extendedLikesInfo.newestLikes
-                                .filter((u) => (u === null || u === void 0 ? void 0 : u.userId) !== userId && (u === null || u === void 0 ? void 0 : u.status) === types_1.LikeStatus.LIKE)
+                                .filter((u) => (u === null || u === void 0 ? void 0 : u.status) === types_1.LikeStatus.LIKE)
                                 .slice(1)
                                 .slice(-3)
                                 .map((e) => {
@@ -114,7 +114,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                             }).reverse()
                             // @ts-ignore
                             : res.extendedLikesInfo.newestLikes
-                                .filter((u) => (u === null || u === void 0 ? void 0 : u.userId) !== userId && (u === null || u === void 0 ? void 0 : u.status) === types_1.LikeStatus.LIKE)
+                                .filter((u) => (u === null || u === void 0 ? void 0 : u.status) === types_1.LikeStatus.LIKE)
                                 .map((e) => {
                                 return {
                                     userId: e.userId,

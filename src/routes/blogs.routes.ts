@@ -44,10 +44,12 @@ router.get('/:blogId/posts', getUserByRefreshJWT, async (req: Request, res: Resp
 
 router.post('/:blogId/posts', authMiddleware, ...validatorMiddlewarePosts, validatorsErrorsMiddleware, async (req: Request, res: Response) => {
     const result1 = await blogsQueryRepo.findById(req.params.blogId);
+
     if (!result1) {
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;
     }
+
     const createdRow = await postsDomain.create({
         ...req.body,
         blogId: req.params.blogId,

@@ -20,7 +20,7 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
         blogId: string,
     ) {
         // @ts-ignore
-        return await super.find(userId, pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
+        return await this.find(userId, pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
     }
     // @ts-ignore
     async findById(userId: string | number | undefined, _id: ObjectId | string, excludeFields: object = {}) {

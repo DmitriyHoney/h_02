@@ -21,12 +21,9 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
     findByBlogId(userId, pageSize, pageNumber, sortBy, sortDirection, 
     // @ts-ignore
     blogId) {
-        const _super = Object.create(null, {
-            find: { get: () => super.find }
-        });
         return __awaiter(this, void 0, void 0, function* () {
             // @ts-ignore
-            return yield _super.find.call(this, userId, pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
+            return yield this.find(userId, pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
         });
     }
     // @ts-ignore

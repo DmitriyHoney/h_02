@@ -36,10 +36,11 @@ router.get('/:id/', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     res.status(types_1.HTTP_STATUSES.OK_200).send(result);
 }));
-router.get('/:blogId/posts', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/:blogId/posts', auth_middleware_1.getUserByRefreshJWT, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
     // @ts-ignore
-    const result = yield posts_repositry_1.postQueryRepo.findByBlogId(pageSize, pageNumber, sortBy, sortDirection, req.params.blogId);
+    const result = yield posts_repositry_1.postQueryRepo.findByBlogId((_b = (_a = req.context) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.id, pageSize, pageNumber, sortBy, sortDirection, req.params.blogId);
     // @ts-ignore
     if (!result || result.items.length === 0) {
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
@@ -48,7 +49,7 @@ router.get('/:blogId/posts', (req, res) => __awaiter(void 0, void 0, void 0, fun
     res.status(types_1.HTTP_STATUSES.OK_200).send(result);
 }));
 router.post('/:blogId/posts', auth_middleware_1.authMiddleware, ...posts_middleware_1.createPostsBodyWithoutBlogId, middlewares_1.validatorsErrorsMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _c, _d;
     const result1 = yield blogs_repositry_1.blogsQueryRepo.findById(req.params.blogId);
     if (!result1) {
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
@@ -56,7 +57,7 @@ router.post('/:blogId/posts', auth_middleware_1.authMiddleware, ...posts_middlew
     }
     const createdRow = yield posts_domain_1.default.create(Object.assign(Object.assign({}, req.body), { blogId: req.params.blogId }));
     // @ts-ignore
-    const result = yield posts_repositry_1.postQueryRepo.findById((_b = (_a = req.context) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.id, createdRow);
+    const result = yield posts_repositry_1.postQueryRepo.findById((_d = (_c = req.context) === null || _c === void 0 ? void 0 : _c.user) === null || _d === void 0 ? void 0 : _d.id, createdRow);
     if (!result) {
         res.status(types_1.HTTP_STATUSES.NOT_FOUND_404).send('Not found');
         return;

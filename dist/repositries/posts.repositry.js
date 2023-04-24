@@ -18,14 +18,15 @@ class PostCommandRepo extends base_repositry_1.CommandRepo {
 // @ts-ignore
 exports.postCommandRepo = new PostCommandRepo(posts_collection_1.PostModel);
 class PostQueryRepo extends base_repositry_1.QueryRepo {
-    findByBlogId(pageSize, pageNumber, sortBy, sortDirection, 
+    findByBlogId(userId, pageSize, pageNumber, sortBy, sortDirection, 
     // @ts-ignore
     blogId) {
         const _super = Object.create(null, {
             find: { get: () => super.find }
         });
         return __awaiter(this, void 0, void 0, function* () {
-            return yield _super.find.call(this, pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
+            // @ts-ignore
+            return yield _super.find.call(this, userId, pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
         });
     }
     // @ts-ignore
@@ -91,7 +92,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
                 // @ts-ignore
                 items: res.items.map((i) => {
                     const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
-                    const myStatus = userLikeStatus
+                    const myStatus = userLikeStatus && userLikeStatus.status
                         ? userLikeStatus.status
                         : types_1.LikeStatus.NONE;
                     let res = i;

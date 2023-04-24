@@ -11,6 +11,7 @@ export const postCommandRepo = new PostCommandRepo(PostModel);
 
 class PostQueryRepo extends QueryRepo<PostModelType> {
     async findByBlogId(
+        userId: string | number | undefined,
         pageSize?: string,
         pageNumber?: string,
         sortBy?: string,
@@ -18,7 +19,8 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
         // @ts-ignore
         blogId: string,
     ) {
-        return await super.find(pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
+        // @ts-ignore
+        return await super.find(userId, pageSize, pageNumber, sortBy, sortDirection, { blogId: blogId });
     }
     // @ts-ignore
     async findById(userId: string | number | undefined, _id: ObjectId | string, excludeFields: object = {}) {

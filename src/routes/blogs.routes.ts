@@ -7,7 +7,7 @@ import { blogsQueryRepo } from '../repositries/blogs.repositry';
 import { postQueryRepo } from '../repositries/posts.repositry';
 import blogsDomain from '../domain/blogs.domain';
 import postsDomain from '../domain/posts.domain';
-import { authMiddleware } from '../middlewares/auth.middleware';
+import {authMiddleware, getUserByRefreshJWT} from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -30,10 +30,10 @@ router.get('/:id/', async (req: Request, res: Response) => {
     res.status(HTTP_STATUSES.OK_200).send(result);
 });
 
-router.get('/:blogId/posts', async (req: Request, res: Response) => {
+router.get('/:blogId/posts', getUserByRefreshJWT, async (req: Request, res: Response) => {
     const { pageSize, pageNumber, sortBy, sortDirection } = req.query;
     // @ts-ignore
-    const result = await postQueryRepo.findByBlogId(pageSize, pageNumber, sortBy, sortDirection, req.params.blogId);
+    const result = await postQueryRepo.findByBlogId(req.context?.user?.id, pageSize, pageNumber, sortBy, sortDirection, req.params.blogId);
     // @ts-ignore
     if (!result || result.items.length === 0) {
         res.status(HTTP_STATUSES.NOT_FOUND_404).send('Not found');

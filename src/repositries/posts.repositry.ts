@@ -29,7 +29,7 @@ class PostQueryRepo extends QueryRepo<PostModelType> {
 
         const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
 
-        const myStatus = userLikeStatus
+        const myStatus = userLikeStatus && userLikeStatus.status
             ? userLikeStatus.status
             : LikeStatus.NONE;
 

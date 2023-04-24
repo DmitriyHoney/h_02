@@ -40,7 +40,7 @@ class PostQueryRepo extends base_repositry_1.QueryRepo {
             if (!userId)
                 userId = 'none';
             const userLikeStatus = i.extendedLikesInfo.newestLikes.find((i) => i.userId === userId);
-            const myStatus = userLikeStatus
+            const myStatus = userLikeStatus && userLikeStatus.status
                 ? userLikeStatus.status
                 : types_1.LikeStatus.NONE;
             let res = i.toObject();
